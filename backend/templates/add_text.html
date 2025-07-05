@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Data Entry Page</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='add_items.css') }}">
+</head>
+<body>
+<div class="outerContainer">
+  <div class="innerContainer">
+    <!-- Manual Input Panel -->
+    <div class="panel" style="border: 1px solid black;">
+      <div class="inner-shell" >
+        <div id="form_group"></div>
+          <form action="/add_text" method="POST" id="add_text">
+            <label>Title<input type="text" name="title" id="title"></label>
+            <label>Author<input type="text" name="author" id="author"></label>
+
+            <label>Paste Text<textarea name="content" id="content" placeholder="paste content here"></textarea>
+
+            <label><br>Import JSON<input type="file" id="json_file" name="json_file" accept=".json"><br><br></label>
+            <input type="submit" value="Add JSON">
+
+          </form>
+        </div>
+      </div>
+
+
+    </div>
+
+
+
+
+  </div>
+  <div class="lowerContainer" id="messenger">
+      <h3>{{ message }}</h3>
+
+
+  </div>
+ <nav class="universal">
+        <a href="/">Home</a>
+
+    </nav>
+
+<script>
+  const contents = document.getElementById('story_content');
+
+  contents.addEventListener("change", function() {
+      form_group.innerHTML= `<label for="title">Title</label>
+         <input type="text" id="title" name="title" placeholder="Book Title">
+         <label for="author" id="author">Author</label>
+          <input type="text" id="author" name="author">`;
+
+  });
+</script>
+
+</body>
+</html>
