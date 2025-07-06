@@ -1,8 +1,9 @@
 import json
 import utilities
 import os.path
-from data_models import db, Author, Book
+from data_models import db, Clue, Text, Case, Character
 from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError, PendingRollbackError
 import shutil
 
@@ -57,4 +58,20 @@ def import_text_as_json(file):
     except FileNotFoundError:
         return ("No json file found")
     except Exception as e:  # For Debugging and Testing catch all Exceptions
-        return f"Something went wrong reading stories: Exception {e}."
+        return f"Something went wrong reading json file: Exception {e}."
+
+def read_case_from_db(case_id):
+    """retrieves an unresolved case from db to continue an old game."""
+    try:
+        case = (db.session.query(Case).filter(Case.id == case_id) \
+                .join(Character) \
+                .join(Clue) \
+                .first())
+        print(case) #debug
+        return case
+    except Exception as e:  # For Debugging and Testing catch all Exceptions
+        return f"Something went wrong reading json file: Exception {e}."
+
+
+def add_case_to_db(json):
+    """ reads json (file or aI response) and inserts the data into db table clues"""

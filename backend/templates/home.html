@@ -7,7 +7,7 @@
 
 </head>
 <body>
-    <div class="container">
+    <div class="container-vert">
         <form>
            <label for="pick_case">Pick a case</label><br>
               <select name="pick_case" id="pick_case" size="5">
@@ -17,22 +17,34 @@
               <option value="{{ case.id }}">No. {{ case.id }}: {{ case.description }}</option>
               {% endfor %}
               </select>
-            <label>Pick:<input type="submit" id="case_no"></label>
+            <label>Pick:<input type="submit" id="case_no" name="case_no"></label>
 
          </form>
     <div class="container">
-        <form>
-           <label for="pick_story">Pick a story to create a new case</label><br>
-              <select name="pick_story" id="pick_story" size="5">
-              {% for story in stories %}
+        <form action="/generate_case" method="POST" id="generate_case">
+           <label for="pick_text">Pick a story to create a new case</label><br>
+              <select name="pick_text" id="pick_text" size="5">
+              {% for text in texts %}
 
 
-              <option value="{{ story.id }}">No. {{ story.id }}: {{ story.title }} from {{ story.author }}</option>
+              <option value="{{ text.id }}">No. {{ text.id }}: {{ text.title }} from {{ text.author }}</option>
               {% endfor %}
               </select>
-            <label>Pick:<input type="submit" id="text_no"></label>
+
+            <input type="text" id="text_id" name="text_id" size="4" readonly>
+            <label>Pick:<input type="submit" value="Add Text"></label>
          </form>
 
     </div>
 </body>
+<script>
+
+    const select = document.getElementById('pick_text');
+
+    const input = document.getElementById('text_id');
+
+    selectText.addEventListener("click", function () {
+        input.value = select.value;
+    });
+</script>
 </html>

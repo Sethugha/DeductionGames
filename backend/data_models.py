@@ -6,13 +6,12 @@ db = SQLAlchemy()
 class Case(db.Model):
     __tablename__ = 'cases'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    title = db.Column(db.String)
     description = db.Column(db.String)
-    characters = db.Column(db.String)
-    clues = db.Column(db.String)
     questions =  db.Column(db.String)
     solution = db.Column(db.String)
     status = db.Column(db.String(10))
-    source = db.Column(db.Integer, db.ForeignKey('texts.id')
+    source = db.Column(db.Integer, db.ForeignKey('texts.id'))
 
 
     def __repr__(self):
@@ -40,7 +39,7 @@ class Clue(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     case_id = db.Column(db.Integer, db.ForeignKey('cases.id'))
     clue_desc = db.Column(db.String)
-    clue_details = db.Column(db.String) [note: 'List of details']
+    clue_details = db.Column(db.String)
 
     def __repr__(self):
         return f"Clue(id = {self.id}, type = {self.type}, desc = {self.desc}"

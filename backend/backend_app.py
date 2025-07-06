@@ -1,6 +1,8 @@
 from flask import Flask,render_template, request, jsonify, redirect, url_for, make_response
 from sqlalchemy import desc
-from data_models import db, Character, Case, Clue
+
+import ai_request
+from data_models import db, Character, Case, Clue, Text
 from os import path
 import config
 #import utilities
@@ -26,8 +28,9 @@ ai_client = AIRequest()
 def home():
     """ Route to home page with Story-selection and stats."""
     cases = db.session.query(Case).filter(Case.status != 'solved').all()
+    print(cases)
     stories = db.session.query(Text).all()
-    return render_template('index.html', cases=cases,  stories=stories, message="")
+    return render_template('home.html', cases=cases,  stories=stories, message="")
 
 
 
@@ -37,11 +40,21 @@ def pick_case():
     Pick an unresolved case from list to continue a previous game
     :return:
     """
+    case_id = request.form.get('case')
+    if case_id:
+        data = storage.read_case_from_db(case_id)
+        case_description = data.description # string
+        render_template('index.html', description=case_description, characters=character_list, clues=clues )
+    return redirect(url_for('home'))
 
 
 
 
-@app.route('/generate_case',methods=['POST'])
+
+
+
+
+@app.route('/generate_case',methods=['GET','POST'])
 def generate_case():
     """
     Based on the extracted novel-parts the AI generates a specific mystery
@@ -55,18 +68,35 @@ def generate_case():
     (flow: chapter selection -> flask POST -> AI-model for logic and text generation
      -> flask -> db)
     """
-    #generate case from picked text
-    pass
+    texts = db.session.query(Text).all()
+    cases = db.session.query(Case).all()
+    if request.method == 'GET':
+        return render_template('home.html', texts=texts, cases=cases)
+    elif request.method == 'POST':
+        #generate case from picked text
+        text_id = request.form.get('text_no')
+        print(text_id) #debug
+        if text_id:
+            try:
+                text = db.session.query(Text).filter(Text.id == 'text_id').first()
+                print(text.content)
+                #ai_case_construction = ai_client.ai_request(text)
+            except Exception as e:
+                print(f"Something went wrong: {e}")
+    print(ai_case_construction)
 
 
-@app.route('/add_text', methods=['GET','PUT'])
+@app.route('/add_text', methods=['GET','POST'])
 def add_text():
     """Route for adding own texts into db for later processing"""
     if request.method == 'GET':
         return render_template('add_text.html')
-    title = request.form.get('title')
-    author= request.form.get('author')
-    content = request.form.get('content')
+
+    elif request.method == 'POST':
+        title = request.form.get('title')
+        author= request.form.get('author')
+        content = request.form.get('content')
+
     if title and author and content:
         text = Text(title=title, author=author, content=content)
         message = storage.add_story_to_db(text)
@@ -114,8 +144,8 @@ if __name__ == "__main__":
     """Check for database file and initialization of backend service"""
     if DB_PATH:
         db.init_app(app)
-        with app.app_context():
-           db.create_all()
+        #with app.app_context():
+        #   db.create_all()
         app.run(host="127.0.0.1", port=5002, debug=True)
     else:
         print("No database accessible. Aborting.")

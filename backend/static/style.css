@@ -19,6 +19,16 @@
             gap: 20px; /* Space between the two main boxes */
         }
 
+        .container-vert {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1200px; /* Optional: Limit overall width for better readability */
+            padding: 20px;
+            box-sizing: border-box;
+            gap: 20px; /* Space between the two main boxes */
+        }
+
         .box {
             flex: 0 0 40%; /* Flex-grow: 0, flex-shrink: 0, flex-basis: 40% */
             background-color: #fff;

@@ -33,4 +33,4 @@ class DevConfig(Config):
     else:
         SQLALCHEMY_DATABASE_URI = f"sqlite:///{DB_PATH}"
     #Print database-related actions to console.
-    SQLALCHEMY_ECHO = True
+    SQLALCHEMY_ECHO = False
