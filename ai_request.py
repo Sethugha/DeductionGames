@@ -53,21 +53,34 @@ class AIRequest():
         """
         Order the metamorphosis.
         """
-
         prompt = f"""
-        Based on The Adventure of the Speckled Band by Arthur Conan Doyle, generate an interactive deduction game scenario.
-        Provide a brief introduction to the case (3–4 sentences).
-        List the characters involved (include suspects and witnesses).
-        List them as list of dictionaries see example below:          
-        Provide 5–7 clues that the player can investigate, some relevant, some misleading.                                
-        The clues should be detailed enough for some logical deduction, but not necessary lead to the solution.
-        User should go deeper into the details to find the solution.
-        At last append the solution. 
-        Answer should be in json format.
-        """
+                Answer every question as if you never heard of it even if it´s a repetition from an older question.
+                Based on {data_string}, generate an interactive deduction game scenario.
+                Provide a brief introduction to the case (3–4 sentences).
+                List the characters involved (include suspects and witnesses).
+                List them as list of dictionaries see example below:          
+                Provide 5–7 clues that the player can investigate, some relevant, some misleading.                                
+                The clues should be detailed enough for some logical deduction, but not necessary lead to the solution.
+                User should go deeper into the details to find the solution.
+                At last append the solution. 
+                Answer in json as follows:
+                case_title: a telling name.
+                Case description: Brief description
+                Characters as list of dictionaries with keys name and role
+                Clues as list of dictionaries, keys are clue_name, description and details
+                questions as list,
+                Solution as dictionary using keys: 
+                culprit: The villain
+                method: How the crime was done
+                evidence: The clue details leading to this deduction
+                
+                """
         response = self.model.generate_content(prompt)
         response_text = response.text.strip()
         # Remove Markdown-Code-Block-Format
         response_text = response_text.replace('```json', '').replace('```', '').strip()
-        print(f"AI Response: {response_text}") #debug
-        return(f"AI Response: {response_text}")
+        print(response_text)
+        # Validiere und verarbeite die Antwort
+        result = json.loads(response_text)
+
+        return (result)

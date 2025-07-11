@@ -1,0 +1,270 @@
+A Case Of Identity Arthur Conan Doyle
+AI Response: {
+  "gameTitle": "The Angel's Deceit: A Case of Identity Reimagined",
+  "introduction": "Miss Mary Sutherland is heartbroken. Her fiancé, the shy and retiring Mr. Hosmer Angel, vanished on their wedding day just moments before the ceremony. Sherlock Holmes finds the case rather trite, but Miss Sutherland's earnestness draws him in, and he must uncover the truth behind the missing bridegroom and her seemingly oblivious stepfather, Mr. James Windibank. Can you deduce the truth before it's too late?",
+  "gameStructure": {
+    "scenes": [
+      {
+        "sceneId": "bakerStreet",
+        "title": "221B Baker Street: The Initial Consultation",
+        "description": "You are in Sherlock Holmes' lodgings at 221B Baker Street. Miss Mary Sutherland has just finished recounting her story. Examine the evidence she provided, Holmes' observations, and Watson's notes to form your initial deductions.",
+        "evidence": [
+          {
+            "itemId": "advertisement",
+            "name": "Missing Person Advertisement",
+            "description": "The advertisement for Hosmer Angel published in the 'Chronicle'. It details his physical description and last known whereabouts.",
+            "content": "Missing, on the morning of the fourteenth, a gentleman named Hosmer Angel. About five ft. seven in. in height; strongly built, sallow complexion, black hair, a little bald in the centre, bushy, black side-whiskers and moustache; tinted glasses, slight infirmity of speech. Was dressed, when last seen, in black frock-coat faced with silk, black waistcoat, gold Albert chain, and grey Harris tweed trousers, with brown gaiters over elastic-sided boots. Known to have been employed in an office in Leadenhall Street."
+          },
+          {
+            "itemId": "letters",
+            "name": "Letters from Hosmer Angel",
+            "description": "Four typewritten letters from Mr. Hosmer Angel to Miss Sutherland. They are all addressed from Leadenhall Street.",
+            "content": "The letters are filled with affection and promises of eternal devotion. They contain no specific details about his work or personal life, only affection."
+          },
+          {
+            "itemId": "holmesNotes",
+            "name": "Holmes' Observations",
+            "description": "Sherlock Holmes' initial observations about Miss Sutherland's appearance and behavior.",
+            "content": "- Short sight likely due to extensive typewriting.\n- Odd boots and half-buttoned, suggesting she left in a hurry.\n- Violet ink stain on glove and finger, indicating a note written this morning.\n- Typewritten letters, including the signature."
+          },
+          {
+            "itemId": "watsonNotes",
+            "name": "Watson's Notes",
+            "description": "Dr. Watson's observations about Miss Sutherland.",
+            "content": "Miss Sutherland is a well-meaning but somewhat simple woman. She is clearly deeply in love with Mr. Hosmer Angel and trusts him implicitly."
+          }
+        ],
+        "questions": [
+          {
+            "questionId": "q1",
+            "text": "What is the most unusual aspect of Mr. Hosmer Angel's letters?",
+            "options": [
+              "The letters are excessively affectionate.",
+              "The letters are typewritten.",
+              "The letters are poorly written.",
+              "The letters are addressed to a Post Office Box."
+            ],
+            "correctAnswer": "The letters are typewritten.",
+            "feedbackCorrect": "Correct! The fact that even the signature is typewritten is very suggestive.",
+            "feedbackIncorrect": "Incorrect. While those aspects might be slightly unusual, there's a more significant detail about the letters."
+          },
+          {
+            "questionId": "q2",
+            "text": "What does Holmes deduce from Miss Sutherland's odd boots and violet ink stain?",
+            "options": [
+              "She is careless and forgetful.",
+              "She is artistic and expressive.",
+              "She left in a hurry after writing a note.",
+              "She is eccentric and bohemian."
+            ],
+            "correctAnswer": "She left in a hurry after writing a note.",
+            "feedbackCorrect": "Correct! Her appearance suggests she rushed out and wrote a note beforehand.",
+            "feedbackIncorrect": "Incorrect. Look closely at the clues that Holmes mentions from her disheveled appearance."
+          }
+        ],
+        "nextScene": "fenchurchStreet"
+      },
+      {
+        "sceneId": "fenchurchStreet",
+        "title": "Fenchurch Street: Westhouse & Marbank",
+        "description": "Holmes seeks information at Westhouse & Marbank, the claret importers where Mr. Windibank works. In this scene, you must analyze company records and interview witnesses to pinpoint inconsistencies.",
+        "evidence": [
+            {
+              "itemId": "companyRecords",
+              "name": "Company Records",
+              "description": "Employee records and descriptions for Westhouse & Marbank.",
+              "content": "James Windibank: Traveler, approx 5'7\", Sallow complexion, Black hair, grey eyes. No mention of any glasses."
+            }
+,
+            {
+              "itemId": "interviewWitness",
+              "name": "Interview with Coworker",
+              "description": "A coworker's statement about James Windibank.",
+              "content": "James? Fine chap, always keeps to himself. Travels often, France mostly. Never seen him with glasses. He's got a strong voice, always joking around"
+            }
+          ],
+           "questions": [
+              {
+                "questionId": "q3",
+                "text": "What information from the company records will lead to the proper deduction",
+                "options": [
+                  "The amount of revenue that Windibank makes",
+                  "Physical description of Windibank",
+                  "The date he was hired",
+                  "His relationship with his coworkers"
+                ],
+                "correctAnswer": "Physical description of Windibank",
+                "feedbackCorrect": "Excellent. The physical description is key to the ruse.",
+                "feedbackIncorrect": "No. He is an employee, but other information may lead to the truth."
+              },
+              {
+                "questionId": "q4",
+                "text": "From the combined evidence of the company records and coworker interview, which key details contrast Windibank from Angel",
+                "options": [
+                  "Angel wears glasses and speaks softly",
+                  "Angel speaks in french every other word",
+                  "Angel makes much more money than Windibank",
+                  "Angel is bald"
+                ],
+                "correctAnswer": "Angel wears glasses and speaks softly",
+                "feedbackCorrect": "Excellent! That will become relevant later.",
+                "feedbackIncorrect": "No. Think physical descriptions that contrast."
+              }
+            ],
+        "nextScene": "bakerStreetConfrontation"
+      },
+      {
+        "sceneId": "bakerStreetConfrontation",
+        "title": "221B Baker Street: The Confrontation",
+        "description": "Mr. Windibank arrives at Baker Street. It's time to confront him with your deductions and reveal the truth.",
+        "evidence": [],
+        "questions": [
+          {
+            "questionId": "q5",
+            "text": "What is the most significant piece of evidence linking Mr. Windibank to Mr. Hosmer Angel?",
+            "options": [
+              "They both work in Leadenhall Street.",
+              "They both have a connection to Miss Sutherland.",
+              "The letters from Mr. Angel and the note from Mr. Windibank are typed on the same typewriter.",
+              "They both have traveled to France."
+            ],
+            "correctAnswer": "The letters from Mr. Angel and the note from Mr. Windibank are typed on the same typewriter.",
+            "feedbackCorrect": "Correct! The unique characteristics of the typewriter are the key to the disguise.",
+            "feedbackIncorrect": "Incorrect. While those details are suspicious, the typewriter is a more concrete piece of evidence."
+          },
+          {
+            "questionId": "q6",
+            "text": "Why did Mr. Windibank impersonate Mr. Hosmer Angel?",
+            "options": [
+              "He wanted to steal Miss Sutherland's money.",
+              "He was jealous of her affections.",
+              "He wanted to prevent her from marrying and losing her income, which he was using.",
+              "He was bored and wanted to play a prank."
+            ],
+            "correctAnswer": "He wanted to prevent her from marrying and losing her income, which he was using.",
+            "feedbackCorrect": "That is the correct answer! Mr. Windibank's actions point to greed.",
+            "feedbackIncorrect": "That is not it. What would prevent his access to money?"
+          }
+        ],
+        "outcome": {
+          "success": "Congratulations! You have unraveled the deception and revealed Mr. Windibank's selfish plot. Miss Sutherland will be heartbroken, but at least she knows the truth.",
+          "failure": "You failed to piece together the clues in time and Mr. Windibank has escaped justice! Unfortunately, Miss Sutherland will continue
+AI Response: {
+  "Sherlock Holmes": "Detective",
+  "Dr. Watson": "Detective's Associate, Narrator",
+  "Miss Mary Sutherland": "Client, Victim of Deception",
+  "Mr. James Windibank": "Stepfather of Mary Sutherland, Perpetrator of the deception (aka Hosmer Angel)",
+  "Mr. Hosmer Angel": "Fictitious Suitor, Created by James Windibank in disguise",
+  "Mrs. Sutherland": "Mother of Mary Sutherland, Accomplice in the deception",
+  "Uncle Ned": "Mary Sutherland's deceased uncle who left her an inheritance",
+  "Mrs. Etherege": "Previous client of Sherlock Holmes, mentioned by Mary Sutherland",
+  "Mrs. Etherege's Husband": "Subject of a previous case solved by Sherlock Holmes",
+  "King of Bohemia": "Former client of Sherlock Holmes, mentioned in the story",
+  "Irene Adler": "Subject of a previous case involving the King of Bohemia",
+  "Cabman": "Witness to the disappearance of Hosmer Angel",
+  "Boy in Buttons": "Holmes's messenger",
+  "Mr. Hardy": "Former foreman of Mr. Sutherland's plumbing business",
+  "Mr.Sutherland": "Mary Sutherland's deceased father"
+}
+AI Response: [
+  {
+    "clue_name": "Mary Sutherland's Typewriter",
+    "clue_description": "A Blickensderfer typewriter sits on a small desk in Miss Sutherland's room at 31 Lyon Place, Camberwell. Several sheets of paper are scattered around it, some with practice typing and some with correspondence.",
+    "clue_details": {
+      "make": "Blickensderfer typewriter with a circular typewheel",
+      "paper_examples": "Sample letters include some practice typing of the letter 'e', several drafts of a thank you note and a letter to Hosmer Angel.",
+      "noticeable_defect": "Some of the letters appear worn, especially the 'e' and the 'r' which has a defect at the top."
+    }
+  },
+  {
+    "clue_name": "Leadenhall Street Post Office",
+    "clue_description": "A busy post office on Leadenhall Street, near several office buildings. Clerks are sorting mail, and people are queuing at the collection boxes.",
+    "clue_details": {
+      "packages": "Several packages piled into large bins for collection.",
+      "window_clerk": "window clerks look overworked and stressed.",
+      "mail_box": "A large mail box with labels for different delivery times",
+      "address_enquiries": "Enquiries at the address window are possible but may require extensive reasons."
+    }
+  },
+  {
+    "clue_name": "Westhouse & Marbank Office",
+    "clue_description": "An office building on Fenchurch Street, with a directory in the lobby. 'Westhouse & Marbank, Claret Importers' is listed on the third floor.",
+    "clue_details": {
+      "directory": "A directory with a list of companies and floor number.",
+      "security": "A security guards the entrance and requires passes from visitors.",
+      "employee_list": "Employee lists are nowhere to be seen.",
+	  "third_floor": "Sounds of conversation can be heard from the third floor."
+    }
+  },
+  {
+    "clue_name": "St. Saviour's Church Near King's Cross",
+    "clue_description": "A small, quiet church near King's Cross. The vicar is in the vestry reading.",
+    "clue_details": {
+      "cab_stand": "A cab stand is located across the street.",
+      "wedding_registry": "The church's wedding registry shows no entry for a wedding with the name 'Hosmer Angel' or 'Mary Sutherland' on the 14th.",
+      "witnesses": "The vicar could give more information, but requires serious reasons.",
+      "back_entrance": "A back entrance that would allow someone to step in, then out of a cab unseen."
+    }
+  },
+  {
+    "clue_name": "St. Pancras Hotel Breakfast Menu",
+    "clue_description": "The breakfast menu at st. pancras hotel restaurant. Includes standard english breakfast fare.",
+    "clue_details":{
+      "price": "Breakfast price is normal for the restaurant. A champagne brunch is also available.",
+      "guest_list": "No way of checking the guest list to see if anyone was booked for breakfast on the 14th. A generous tip could help with this.",
+      "chef": "The chef and kitchenhands have been there for several years and remember a lot of the customers."
+    }
+  },
+  {
+    "clue_name": "James Windibank's Wardrobe",
+    "clue_description": "A standard wardrobe in the Windibank's residence with a coat, waistcoat and trousers. ",
+    "clue_details": {
+      "black_frock_coat": "A coat, waistcoat and trousers in black silk.",
+      "grey_harris_tweed_trousers": "A grey Harris tweed trousers",
+      "elastic-sided_boots": "One pair of brown gaiters over elastic-sided boots",
+      "tinted_spectacles": "A pair of tinted spectacles".
+    }
+  },
+  {
+    "clue_name": "Tottenham Court Road",
+    "clue_description": "The Tottenham Court road is busy. A plumbing supply store can be identified.",
+    "clue_details": {
+      "supply_store": "The plumbing supply store has changed hands since the father passed away. The new owner has few details.",
+      "neighbours": "The shop has been converted into flats. Neighbours have little details about the plumbers living there.",
+      "street_vendors": "Street vendors are selling produce."
+    }
+  }
+]
+AI Response: {
+  "winning_question": "Based on the events of the story, what was James Windibank's true motive for creating the persona of Hosmer Angel and orchestrating his disappearance on the wedding day?",
+  "possible_answers": [
+     "To prevent Miss Sutherland from marrying and losing control of her inheritance.",
+     "To defraud Miss Sutherland of her money.",
+     "To emotionally manipulate Miss Sutherland and keep her dependent on her family.",
+     "To avoid a real marriage that he did not want."
+    ],
+  "correct_answer": "To prevent Miss Sutherland from marrying and losing control of her inheritance."
+}
+AI Response: {
+  "case": "The Disappearance of Hosmer Angel",
+  "detective": "Sherlock Holmes",
+  "client": "Miss Mary Sutherland",
+  "victim": "Miss Mary Sutherland",
+  "perpetrator": "Mr. James Windibank (Miss Sutherland's stepfather)",
+  "motive": "Financial Gain: To prevent Miss Sutherland's marriage and the subsequent loss of her annual income (£100) which he and his wife were using.",
+  "method": "Deception and Disguise: Windibank, with the connivance of his wife, impersonated Hosmer Angel, wooed Miss Sutherland, and then staged his disappearance on their wedding day to discourage her from seeking other suitors.",
+  "evidence": [
+    "The two men (Windibank and Angel) were never seen together.",
+    "Hosmer Angel's disappearance occurred on the morning of wedding arrangements with Miss Sutherland including vows of fidelity, and references to a possibility of something occurring on the wedding day.",
+    "A four-wheeler cabman only saw the man get in, but not get out. ",
+    "The firm Westhouse & Marbank had the stepfather's profile description.",
+    "Tinted spectacles and a disguised voice suggested deception.",
+    "The fact that the two men were never together, but that the one always appeared when the other was away, was suggestive.",
+    "The letters from Hosmer Angel were typewritten, including the signature. When a sample of Windibank's writing was requested, it was also typewritten, using the same machine with the same defects.",
+    "Peculiarities of the typewriter used by both men matched - specifically slurring of the letter 'e' and a defect in the tail of the letter 'r'.",
+    "Miss Sutherland's short-sightedness made it easier for Windibank to maintain the disguise.",
+    "The absence of any genuine financial motive for a stranger to swindle Miss Sutherland, as Hosmer Angel never attempted to access her money."
+  ],
+   "resolution": "Sherlock Holmes identified Windibank as Hosmer Angel by examining the typewritten letters and requesting a profile description match. Holmes confronted Windibank with the evidence, resulting in Windibank's panicked escape. Holmes acknowledged that no legal action could be taken, but exposed the cruelty of the deception.",
+  "quote": "’My dear fellow, is it possible you do not see how strongly it bears upon the case?’\n\n'I cannot say that I do unless it were that he wished to be able to deny his signature if an action for breach of promise were instituted.’\n\n'No, that was not the point. However, I shall write two letters, which should settle the matter. One is to a firm in the City, the other is to the young lady’s stepfather, Mr. Windibank, asking him whether he could meet us here at six o’clock to-morrow evening. It is just as well that we should do business with the male relatives. And now, Doctor, we can do nothing until the answers to those letters come, so we may put our little problem upon the shelf for the interim.'"
+}

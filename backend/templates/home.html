@@ -7,44 +7,34 @@
 
 </head>
 <body>
-    <div class="container-vert">
-        <form>
-           <label for="pick_case">Pick a case</label><br>
-              <select name="pick_case" id="pick_case" size="5">
-              {% for case in cases %}
-
-
-              <option value="{{ case.id }}">No. {{ case.id }}: {{ case.description }}</option>
-              {% endfor %}
-              </select>
-            <label>Pick:<input type="submit" id="case_no" name="case_no"></label>
-
-         </form>
-    <div class="container">
-        <form action="/generate_case" method="POST" id="generate_case">
-           <label for="pick_text">Pick a story to create a new case</label><br>
-              <select name="pick_text" id="pick_text" size="5">
-              {% for text in texts %}
-
-
+    {% if message %}
+        <div class="message">{{ message }}</div>
+    {% endif %}
+    <div class="container" style="max-width:800px; margin:auto; display:block;">
+        <form action="/generate_case" method="POST" id="generate_case" style="margin-bottom:32px; text-align:center;">
+           <label for="pick_text" style="font-size:1.2em; font-weight:bold;">Pick a story to create a new case</label><br>
+              <select name="text_id" id="pick_text" size="5" style="width:80%; max-width:400px; margin:10px auto; display:block;">
+              {% for text in stories %}
               <option value="{{ text.id }}">No. {{ text.id }}: {{ text.title }} from {{ text.author }}</option>
               {% endfor %}
               </select>
-
-            <input type="text" id="text_id" name="text_id" size="4" readonly>
-            <label>Pick:<input type="submit" value="Add Text"></label>
+            <input type="submit" value="Generate case" style="margin-top:10px;">
+        </form>
+        <div class="container-vert" style="text-align:center;">
+            <label for="pick_case" style="font-size:1.2em; font-weight:bold;">Pick a case</label><br>
+        {% if cases %}
+        <form action="/select_case" method="POST" id="select_case" style="margin-bottom:32px; text-align:center;">
+            <select name="case_id" id="pick_case" size="5" style="width:80%; max-width:400px; margin:10px auto; display:block;">
+              {% for case in cases %}
+              <option value="{{ case.id }}">No. {{ case.id }}: {{ case.title }}: {{ case.status }}</option>
+              {% endfor %}
+              </select>
+                 <input type="submit" value="Select case" style="margin-top:10px;">
          </form>
-
+         {% else %}
+            <div style="color:#888; margin:10px 0 20px 0;">Keine Fälle vorhanden. Bitte erst einen Fall generieren.</div>
+         {% endif %}
+        </div>
     </div>
-</body>
-<script>
-
-    const select = document.getElementById('pick_text');
-
-    const input = document.getElementById('text_id');
-
-    selectText.addEventListener("click", function () {
-        input.value = select.value;
-    });
-</script>
+   </body>
 </html>

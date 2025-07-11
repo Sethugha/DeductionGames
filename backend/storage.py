@@ -2,11 +2,21 @@ import json
 import utilities
 import os.path
 from data_models import db, Clue, Text, Case, Character
-from sqlalchemy import or_
+from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError, PendingRollbackError
 import shutil
 
+
+
+def find_highest_case_id():
+    """sometimes I need the next possible case id
+    this function retrieves max(case.id) from db
+    """
+    highest_id = db.session.query(func.max(Case.id)).scalar()
+    if highest_id:
+        return int(highest_id) + 1
+    return 1
 
 
 def add_story_to_db(text):
@@ -60,6 +70,7 @@ def import_text_as_json(file):
     except Exception as e:  # For Debugging and Testing catch all Exceptions
         return f"Something went wrong reading json file: Exception {e}."
 
+
 def read_case_from_db(case_id):
     """retrieves an unresolved case from db to continue an old game."""
     try:
@@ -73,5 +84,24 @@ def read_case_from_db(case_id):
         return f"Something went wrong reading json file: Exception {e}."
 
 
-def add_case_to_db(json):
+def add_case_to_db(ai_case):
     """ reads json (file or aI response) and inserts the data into db table clues"""
+
+
+    case = Case(title=ai_case['game_title'], description=ai_case['introduction'], questions='What happened?', solution=ai_case['solution'], status='open', source=2)
+
+    db.session.add(case)
+    db.session.commit()
+    new_id = db.session.query(Case).filter(Case.title == ai_case['title']).first()
+
+    for character in ai_case['characters']:
+        new_character = Character(case_id=new_id, name=character['name'], role=character['role'] + ': ' + character['description'] )
+        db.session.add(new_character)
+        db.session.commit()
+
+    for clue in ai_case['clues']:
+        new_clue = Clue(case_id=new_id, clue_name=clue['name'], clue_details=clue['description'])
+        db.session.add(new_clue)
+        db.session.commit()
+
+    return "inserted json-data into db"

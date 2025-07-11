@@ -24,6 +24,7 @@ class Character(db.Model):
     case_id = db.Column(db.Integer, db.ForeignKey('cases.id'))
     name = db.Column(db.String)
     role = db.Column(db.String)
+    type = db.Column(db.String)
 
 
     def __repr__(self):
@@ -38,8 +39,10 @@ class Clue(db.Model):
     __tablename__ = 'clues'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     case_id = db.Column(db.Integer, db.ForeignKey('cases.id'))
-    clue_desc = db.Column(db.String)
+    clue_name = db.Column(db.String)
+    clue_description = db.Column(db.String)
     clue_details = db.Column(db.String)
+    relevance = db.Column(db.String)
 
     def __repr__(self):
         return f"Clue(id = {self.id}, type = {self.type}, desc = {self.desc}"
@@ -55,3 +58,15 @@ class Text(db.Model):
 
     def __repr__(self):
         return f"Story: {self.title} from {self.author}."
+
+
+class Solution(db.Model):
+    __tablename__ = 'solutions'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    case_id = db.Column(db.Integer, db.ForeignKey('cases.id'))
+    culprit = db.Column(db.String)
+    method = db.Column(db.String)
+    evidence = db.Column(db.String)
+
+    def __repr__(self):
+        return f"Solution: {self.culprit} used {self.method}."

@@ -2,7 +2,7 @@ from flask import Flask,render_template, request, jsonify, redirect, url_for, ma
 from sqlalchemy import desc
 
 import ai_request
-from data_models import db, Character, Case, Clue, Text
+from data_models import db, Character, Case, Clue, Text, Solution
 from os import path
 import config
 #import utilities
@@ -27,14 +27,14 @@ ai_client = AIRequest()
 @app.route('/')
 def home():
     """ Route to home page with Story-selection and stats."""
-    cases = db.session.query(Case).filter(Case.status != 'solved').all()
-    print(cases)
+    case_infos = db.session.query(Case).all()
     stories = db.session.query(Text).all()
-    return render_template('home.html', cases=cases,  stories=stories, message="")
+    # Charaktere und Hinweise zu jedem Fall sammeln
+
+    return render_template('home.html', stories=stories, cases=case_infos, message="")
 
 
-
-@app.route('/pick_case', methods=['PUT'])
+@app.route('/select_case', methods=['POST'])
 def pick_case():
     """
     Pick an unresolved case from list to continue a previous game
@@ -42,13 +42,24 @@ def pick_case():
     """
     case_id = request.form.get('case')
     if case_id:
-        data = storage.read_case_from_db(case_id)
-        case_description = data.description # string
-        render_template('index.html', description=case_description, characters=character_list, clues=clues )
+        case = db.session.query(Case).filter_by(id=case_id).first()
+
+        if case:
+            characters = db.session.query(Character).filter_by(case_id=case.id).all()
+            clues = db.session.query(Clue).filter_by(case_id=case.id).all()
+            text = db.session.query(Text).filter_by(id=case.source).first()
+            title = getattr(text, 'title', None) or case.title or "Case"
+            author = getattr(text, 'author', None) or "Unknown"
+            description = case.description
+            return render_template(
+                'case_details.html',
+                case=case,
+                title=title,
+                author=author,
+                characters=characters,
+                clues=clues
+            )
     return redirect(url_for('home'))
-
-
-
 
 
 
@@ -68,22 +79,47 @@ def generate_case():
     (flow: chapter selection -> flask POST -> AI-model for logic and text generation
      -> flask -> db)
     """
-    texts = db.session.query(Text).all()
-    cases = db.session.query(Case).all()
-    if request.method == 'GET':
-        return render_template('home.html', texts=texts, cases=cases)
-    elif request.method == 'POST':
-        #generate case from picked text
-        text_id = request.form.get('text_no')
-        print(text_id) #debug
-        if text_id:
-            try:
-                text = db.session.query(Text).filter(Text.id == 'text_id').first()
-                print(text.content)
-                #ai_case_construction = ai_client.ai_request(text)
-            except Exception as e:
-                print(f"Something went wrong: {e}")
-    print(ai_case_construction)
+    text_id = request.form.get('text_id')
+    if not text_id:
+        return redirect(url_for('home', message="Please select a Story."))
+    text = db.session.query(Text).filter_by(id=text_id).first()
+    if not text:
+        return redirect(url_for('home', message="Story nicht gefunden."))
+
+    # Erzeuge neuen Fall
+    new_case = ai_client.ai_request(text.content)
+    # Extract case title and introduction
+    new_id = storage.find_highest_case_id()
+    case_title = new_case.get('case_title', 'Case'+str(new_id))
+    introduction = new_case.get('case_description', None)
+    solution = new_case.get('solution', None)
+    case = Case(title=case_title, description=introduction, solution=None, status='open', source=text.id)
+    db.session.add(case)
+    db.session.commit()
+
+    # Extract Characters and write into db
+    char_list = new_case.get('characters', None)
+    for char in char_list:
+        character = Character(case_id=new_id, name=char['name'], role = char['role'])
+        db.session.add(character)
+        db.session.commit()
+    # Extract clues and write into db
+    clue_list = new_case.get('clues', None)
+    for hint in clue_list:
+        clue = Clue(case_id=new_id, clue_name=hint['clue_name'], clue_description=hint['description'], clue_details=hint['details'])
+        db.session.add(clue)
+        db.session.commit()
+
+    new_solution = new_case.get('solution', None)
+
+    new_culprit = new_solution.get('culprit')
+    new_method = new_solution.get('method')
+    new_evidence = new_solution.get('evidence')
+    solution = Solution(case_id=new_id, culprit=new_solution['culprit'], method=new_solution['method'], evidence=new_solution['evidence'])
+    db.session.add(solution)
+    db.session.commit()
+
+    return render_template('case_details.html', case=case, characters=char_list, clues=clue_list)
 
 
 @app.route('/add_text', methods=['GET','POST'])
@@ -144,8 +180,8 @@ if __name__ == "__main__":
     """Check for database file and initialization of backend service"""
     if DB_PATH:
         db.init_app(app)
-        #with app.app_context():
-        #   db.create_all()
+        with app.app_context():
+           db.create_all()
         app.run(host="127.0.0.1", port=5002, debug=True)
     else:
         print("No database accessible. Aborting.")
