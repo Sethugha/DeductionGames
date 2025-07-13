@@ -17,7 +17,7 @@
         </div>
         <div style="width:100%;">
             <div class="box" style="margin-bottom:20px; width:100%;">
-                <h3>Charaktere</h3>
+                <h3>Characters</h3>
                 {% if characters %}
                     <ul style="padding-left: 1em;">
                     {% for character in characters %}
@@ -25,19 +25,19 @@
                     {% endfor %}
                     </ul>
                 {% else %}
-                    <div class="flashcard">Keine Charaktere erkannt.</div>
+                    <div class="flashcard">No Characters recognized.</div>
                 {% endif %}
             </div>
             <div class="box" style="margin-bottom:20px; width:100%;">
-                <h3>Hinweise</h3>
+                <h3>Hints and Clues</h3>
                 {% if clues %}
                     <ul style="padding-left: 1em;">
                     {% for clue in clues %}
-                        <li><strong>{{ clue.description }}</strong><br><span style="color: #888;">{{ clue.details }}</span></li>
+                        <li><strong>{{ clue.clue_name }}</strong><br><span style="color: #888;">{{ clue.description }}</span></li>
                     {% endfor %}
                     </ul>
                 {% else %}
-                    <div class="flashcard">Keine Hinweise erkannt.</div>
+                    <div class="flashcard">No Clues recognized.</div>
                 {% endif %}
             </div>
         </div>

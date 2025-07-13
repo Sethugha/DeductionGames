@@ -82,5 +82,92 @@ class AIRequest():
         print(response_text)
         # Validiere und verarbeite die Antwort
         result = json.loads(response_text)
-
         return (result)
+
+
+    def ai_hint_request(self, data_string, clue):
+        """
+        Order information about a clue or suspect.
+        """
+        prompt = f"""
+                Answer every question as if you never heard of it even 
+                if it´s a repetition from an older question.
+                Based on {data_string}, tell me details about {clue}
+                but do not mention the final purpose.
+                Answer in english
+                
+                """
+        response = self.model.generate_content(prompt)
+        response_text = response.text.strip()
+        # Remove Markdown-Code-Block-Format
+        response_text = response_text.replace('```json', '').replace('```', '').strip()
+        #Validiere und verarbeite die Antwort
+        #result = json.loads(response_text)
+
+        return (response_text)
+
+    def ai_character_request(self, data_string, character):
+        """
+        Order information about a clue or suspect.
+        """
+        prompt = f"""
+                Answer every question as if you never heard of it even 
+                if it´s a repetition from an older question.
+                Based on {data_string}, tell me details about {character}
+                but do not tell if he´s the culprit or not.
+                Answer in english
+
+                """
+        response = self.model.generate_content(prompt)
+        response_text = response.text.strip()
+        # Remove Markdown-Code-Block-Format
+        response_text = response_text.replace('```json', '').replace('```', '').strip()
+        # Validiere und verarbeite die Antwort
+        # result = json.loads(response_text)
+
+        return (response_text)
+
+
+    def ai_interrogation(self, data_string, character, clue):
+        """
+        Order information about a clue or suspect.
+        """
+        prompt = f"""
+                Based on {data_string}, you are the character {character}.
+                The interrogator asks you about {clue}.
+                You cannot lie but if you are the culprit, 
+                you are interested in covering up your participation.
+                Answer in english
+
+                """
+        response = self.model.generate_content(prompt)
+        response_text = response.text.strip()
+        # Remove Markdown-Code-Block-Format
+        response_text = response_text.replace('```json', '').replace('```', '').strip()
+        # Validiere und verarbeite die Antwort
+        # result = json.loads(response_text)
+
+        return (response_text)
+
+
+    def ai_accusation(self, data_string, character, evidences):
+        """
+        Accusing a suspect you present the evidences you found.
+        The culprit will give up.
+        """
+        prompt = f"""
+                Based on {data_string}, you are the character {character}.
+                The interrogator accuses you to be the culprit and presents the evidences {evidences}.
+                If the evidences cover more than 80% of the real happening, 
+                the character will confess method and motive of the crime. 
+                Answer in english
+
+                """
+        response = self.model.generate_content(prompt)
+        response_text = response.text.strip()
+        # Remove Markdown-Code-Block-Format
+        response_text = response_text.replace('```json', '').replace('```', '').strip()
+        # Validiere und verarbeite die Antwort
+        # result = json.loads(response_text)
+
+        return (response_text)

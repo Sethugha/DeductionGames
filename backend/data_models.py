@@ -8,8 +8,6 @@ class Case(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String)
     description = db.Column(db.String)
-    questions =  db.Column(db.String)
-    solution = db.Column(db.String)
     status = db.Column(db.String(10))
     source = db.Column(db.Integer, db.ForeignKey('texts.id'))
 
@@ -24,7 +22,7 @@ class Character(db.Model):
     case_id = db.Column(db.Integer, db.ForeignKey('cases.id'))
     name = db.Column(db.String)
     role = db.Column(db.String)
-    type = db.Column(db.String)
+
 
 
     def __repr__(self):
@@ -42,10 +40,10 @@ class Clue(db.Model):
     clue_name = db.Column(db.String)
     clue_description = db.Column(db.String)
     clue_details = db.Column(db.String)
-    relevance = db.Column(db.String)
+
 
     def __repr__(self):
-        return f"Clue(id = {self.id}, type = {self.type}, desc = {self.desc}"
+        return f"Clue(id = {self.id}, name = {self.clue_name}, desc = {self.clue_description}"
 
 
 class Text(db.Model):

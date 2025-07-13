@@ -1,5 +1,5 @@
 from flask import Flask,render_template, request, jsonify, redirect, url_for, make_response
-from sqlalchemy import desc
+from sqlalchemy import desc, and_
 
 import ai_request
 from data_models import db, Character, Case, Clue, Text, Solution
@@ -34,28 +34,28 @@ def home():
     return render_template('home.html', stories=stories, cases=case_infos, message="")
 
 
-@app.route('/select_case', methods=['POST'])
+@app.route('/select_case', methods=['GET','POST'])
 def pick_case():
     """
     Pick an unresolved case from list to continue a previous game
     :return:
     """
-    case_id = request.form.get('case')
+    case_id = request.form.get('case_id')
+    print(case_id)
     if case_id:
         case = db.session.query(Case).filter_by(id=case_id).first()
 
         if case:
             characters = db.session.query(Character).filter_by(case_id=case.id).all()
+
             clues = db.session.query(Clue).filter_by(case_id=case.id).all()
+
             text = db.session.query(Text).filter_by(id=case.source).first()
             title = getattr(text, 'title', None) or case.title or "Case"
-            author = getattr(text, 'author', None) or "Unknown"
-            description = case.description
             return render_template(
-                'case_details.html',
+                'card_boxes.html',
                 case=case,
                 title=title,
-                author=author,
                 characters=characters,
                 clues=clues
             )
@@ -93,22 +93,22 @@ def generate_case():
     case_title = new_case.get('case_title', 'Case'+str(new_id))
     introduction = new_case.get('case_description', None)
     solution = new_case.get('solution', None)
-    case = Case(title=case_title, description=introduction, solution=None, status='open', source=text.id)
+    case = Case(title=case_title, description=introduction, status='open', source=text.id)
     db.session.add(case)
-    db.session.commit()
+    #db.session.commit()
 
     # Extract Characters and write into db
     char_list = new_case.get('characters', None)
     for char in char_list:
         character = Character(case_id=new_id, name=char['name'], role = char['role'])
         db.session.add(character)
-        db.session.commit()
+        #db.session.commit()
     # Extract clues and write into db
     clue_list = new_case.get('clues', None)
     for hint in clue_list:
         clue = Clue(case_id=new_id, clue_name=hint['clue_name'], clue_description=hint['description'], clue_details=hint['details'])
         db.session.add(clue)
-        db.session.commit()
+        #db.session.commit()
 
     new_solution = new_case.get('solution', None)
 
@@ -117,8 +117,8 @@ def generate_case():
     new_evidence = new_solution.get('evidence')
     solution = Solution(case_id=new_id, culprit=new_solution['culprit'], method=new_solution['method'], evidence=new_solution['evidence'])
     db.session.add(solution)
-    db.session.commit()
-
+    #db.session.commit()
+    print("clues:", clue_list)
     return render_template('case_details.html', case=case, characters=char_list, clues=clue_list)
 
 
@@ -144,37 +144,73 @@ def add_text():
     return render_template('add_text.html')
 
 
-@app.route('/view_hints/<location_id>',methods=['GET'])
-def view_hints(location_id):
+@app.route('/view_hint/<clue_id>',methods=['GET','POST'])
+def view_hint(clue_id):
     """
-    Returns all hints found in the location (veiled player version).
+    Returns further information about a single clue.
     """
-    pass
+    text = db.session.query(Text).filter(Text.id==3).first()
+    clue = db.session.query(Clue).join(Case).filter(and_(Case.source == 3, Clue.id == clue_id)).first()
+    result = ai_client.ai_hint_request(text.content, clue)
+
+    print(result)
+    return render_template('hint_detail.html', clue=clue, details=result)
 
 
-@app.route('/statements/<character_id>', methods=['GET'])
-def statements(character_id):
+@app.route('/view_character/<character_id>', methods=['GET','POST'])
+def view_character(character_id):
     """
-    Character interrogation or notes from earlier questioning which contains
-    ai generated hints, obviously obscured
+    Returns further information about a single character.
     """
-    pass
+
+    text = db.session.query(Text).filter(Text.id == 3).first()
+    character = db.session.query(Character).join(Case).filter(
+        and_(Case.source == 3, Character.id == character_id)).first()
+    hints = db.session.query(Clue).filter(Clue.case_id == character.case_id).all()
+
+    result=character.role
+    #result = ai_client.ai_character_request(text.content, character)
+    return render_template('character_detail.html', character=character, details=result, clues=hints)
 
 
-@app.route('/add_fuel', methods=['GET','POST'])
-def add_fuel():
+@app.route('/ask_character', methods=['GET','POST'])
+def ask_character():
     """
-    At this endpoint the AI has not only to generate text but build an internal
-    "case logic"
-    - Input: Details regarding a character, a location or an event from the novel_elements.
-    - Output: Description of a hint, a statement, an assumption about possible motivations
-      or an element of the poodle´s core.
-    (example: If character A is the assumed killer and has been at location B then there might be a
-     lost item from character A or a witness report that A was there. The AI must build up such
-     logic chains.)
+    Returns further information about a single character.
     """
-    pass
+    char_id = request.form.get('char_id')
+    clue_id = request.form.get('pick_clue')
+    question = request.form.get('own_question')
+    character = db.session.query(Character).filter(Character.id==char_id).first()
+    clue = db.session.query(Clue).filter(Clue.id==clue_id).first()
+    clues = db.session.query(Clue).filter(Clue.case_id == character.case_id).all()
+    case = db.session.query(Case).filter(Case.id==character.case_id).first()
+    text = db.session.query(Text).filter(Text.id==case.source).first()
+    if question:
+        interrogation = ai_client.ai_interrogation(text.content, character, question)
+    else:
+        interrogation = ai_client.ai_interrogation(text.content, character, clue)
+    return render_template('character_detail.html', character=character, interrogation=interrogation,
+                           clues=clues)
 
+
+@app.route('/accuse_character/<id>', methods=['GET','POST'])
+def accuse_character(id):
+    """At least the culprit should be found and convicted.
+    since this is a serious crime, evidences must be presented.
+    Evidences are presented to AI.
+    """
+    character = db.session.query(Character).filter(Character.id==id).first()
+    case = db.session.query(Case).filter(Case.id==character.case_id).first()
+    text = db.session.query(Text).filter(Text.id==case.source).first()
+    if request.method == 'POST':
+        evidences = request.form.get('evidences')
+        print("evidences: ", evidences)
+        if evidences:
+            validation = ai_client.ai_accusation(text.content, character, evidences)
+            print("answer: ", validation)
+            return render_template('accusation.html', character=character, evidences=evidences, validation=validation )
+    return render_template('accusation.html', character=character)
 
 if __name__ == "__main__":
     """Check for database file and initialization of backend service"""

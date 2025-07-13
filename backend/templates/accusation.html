@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Accusation</title>
+</head>
+<body>
+    <div class="container-vert">
+    <h2>Accuse {{ character.name }}</h2>
+        <header>Present the evidences you found</header>
+        <form action="/accuse_character/{{ character.id }}" method="POST">
+            <input type="textarea" cols="50" rows="10" id="evidences" name="evidences"></textarea>
+            <input type="submit" >
+
+        </form>
+        <div class="flashcard">
+
+                {{ validation }}
+
+        </div>
+    </div>
+     <nav class="universal">
+        <a href="/">Home</a>
+
+    </nav>
+</body>
+</html>

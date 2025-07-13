@@ -9,9 +9,20 @@
             min-height: 100vh; /* Minimum height of the viewport */
             background-color: #f4f4f4;
         }
+        .container-narrow {
+            display: flex;
+            flex-direction: row;
+            width: 60%;
+            max-width: 1200px; /* Optional: Limit overall width for better readability */
+            padding: 20px;
+            box-sizing: border-box;
+            margin-left: 15px;
+            gap: 20px; /* Space between the two main boxes */
+        }
 
         .container {
             display: flex;
+            flex-direction: row;
             width: 100%;
             max-width: 1200px; /* Optional: Limit overall width for better readability */
             padding: 20px;
@@ -29,8 +40,20 @@
             gap: 20px; /* Space between the two main boxes */
         }
 
-        .box {
+        .box-narrow {
             flex: 0 0 40%; /* Flex-grow: 0, flex-shrink: 0, flex-basis: 40% */
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column; /* Stack flashcards vertically */
+            gap: 15px; /* Space between flashcards */
+            overflow-y: auto; /* Enable scrolling if content overflows */
+        }
+
+        .box {
+            flex: 0 0 80%; /* Flex-grow: 0, flex-shrink: 0, flex-basis: 40% */
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -48,7 +71,17 @@
             padding: 15px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             text-align: center;
-            font-size: 1.1em;
+            font-size: 0.9em;
+            color: #333;
+        }
+        .flashcard:hover {
+            background-color: #e0f7fa; /* Light blue background for flashcards */
+            border: 1px solid #b2ebf2;
+            border-radius: 6px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            font-size: 0.9em;
             color: #333;
         }
 
@@ -57,3 +90,16 @@
             margin-bottom: 5px;
             color: #00796b; /* Darker green for emphasis */
         }
+
+        button {
+            height: 20px;
+            width: 20px;
+        }
+
+        textarea {
+            width: 90%;
+            resize: vertical,horizontal;
+            min-height: 150px;
+            font-family: monospace;
+            margin-bottom: 10px;
+    }
