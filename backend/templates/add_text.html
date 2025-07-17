@@ -4,55 +4,154 @@
   <meta charset="UTF-8">
   <title>Data Entry Page</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='add_items.css') }}">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    .outerContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 40px auto;
+    }
+
+    .innerContainer {
+      width: 90%;
+      max-width: 700px;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      padding: 20px;
+    }
+
+    .panel {
+      border: 1px solid #ccc;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    .inner-shell {
+      display: flex;
+      flex-direction: column;
+    }
+
+    form label {
+      display: block;
+      margin: 15px 0 5px;
+      font-weight: 600;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      font-size: 1em;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      min-height: 160px;
+      resize: vertical;
+    }
+
+    input[type="file"] {
+      margin-top: 10px;
+    }
+
+    input[type="submit"] {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1em;
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #43a047;
+    }
+
+    .lowerContainer {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .lowerContainer h3 {
+      color: #4CAF50;
+    }
+
+    nav.universal {
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    nav.universal a {
+      text-decoration: none;
+      color: #4CAF50;
+      font-weight: bold;
+    }
+
+    nav.universal a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
 <div class="outerContainer">
   <div class="innerContainer">
     <!-- Manual Input Panel -->
-    <div class="panel" style="border: 1px solid black;">
-      <div class="inner-shell" >
+    <div class="panel">
+      <div class="inner-shell">
         <div id="form_group"></div>
-          <form action="/add_text" method="POST" id="add_text">
-            <label>Title<input type="text" name="title" id="title"></label>
-            <label>Author<input type="text" name="author" id="author"></label>
+        <form action="/add_text" method="POST" id="add_text" enctype="multipart/form-data">
+          <label for="title">Title</label>
+          <input class="input-visible" type="text" name="title" id="title">
 
-            <label>Paste Text<textarea name="content" id="content" placeholder="paste content here"></textarea>
+          <label for="author">Author</label>
+          <input class="input-visible" type="text" name="author" id="author">
 
-            <label><br>Import JSON<input type="file" id="json_file" name="json_file" accept=".json"><br><br></label>
-            <input type="submit" value="Add">
+          <label for="content">Paste Text</label>
+          <textarea name="content" id="content" placeholder="Paste content here"></textarea>
 
-          </form>
-        </div>
+          <label for="json_file">Import JSON</label>
+          <input class="input-visible" type="file" id="json_file" name="json_file" accept=".json">
+
+          <input class="input-visible" type="submit" value="Add">
+        </form>
       </div>
-
-
     </div>
-
-
-
-
   </div>
+
   <div class="lowerContainer" id="messenger">
-      <h3>{{ message }}</h3>
-
-
+    <h3>{{ message }}</h3>
   </div>
- <nav class="universal">
-        <a href="/">Home</a>
 
-    </nav>
+  <nav class="universal">
+    <a href="/">Home</a>
+  </nav>
+</div>
 
 <script>
   const contents = document.getElementById('story_content');
-
-  contents.addEventListener("change", function() {
-      form_group.innerHTML= `<label for="title">Title</label>
-         <input type="text" id="title" name="title" placeholder="Book Title">
-         <label for="author" id="author">Author</label>
-          <input type="text" id="author" name="author">`;
-
-  });
+  if (contents) {
+    contents.addEventListener("change", function () {
+      form_group.innerHTML = `
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title" placeholder="Story Title">
+        <label for="author">Author</label>
+        <input type="text" id="author" name="author">`;
+    });
+  }
 </script>
-
 </body>
 </html>

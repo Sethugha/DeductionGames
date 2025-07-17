@@ -6,9 +6,11 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+
+
     <div class="container" style="display:block; max-width:800px; margin:auto;">
         <h2>Case Details</h2>
-        <div style="margin-bottom:10px;">
+        <div style="margin-bottom:10px; text-alignment: center;">
             <b>{{ case.title if case.title else 'Case No. ' ~ case.id }}</b>
 
         </div>
@@ -45,5 +47,11 @@
             <button type="submit">Zurück zur Übersicht</button>
         </form>
     </div>
+
+    <nav class="universal">
+        <a href="/">Home</a>
+        <a href="/add_text">Add new Story</a>
+    </nav>
+
 </body>
 </html>

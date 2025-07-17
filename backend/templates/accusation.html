@@ -3,27 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>Accusation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .container-vert {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        header {
+            text-align: center;
+            font-size: 1.1em;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: block;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 90%;
+            max-width: 500px;
+            height: 200px;
+            padding: 12px;
+            font-size: 1em;
+            font-family: inherit;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            resize: vertical;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .input-visible[type="submit"] {
+            margin-top: 16px;
+            padding: 10px 20px;
+            font-size: 1em;
+            border: none;
+            border-radius: 6px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .input-visible[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .flashcard {
+            margin-top: 20px;
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        nav.universal {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        nav.universal a {
+            text-decoration: none;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        nav.universal a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
     <div class="container-vert">
-    <h2>Accuse {{ character.name }}</h2>
+        <h2>Accuse {{ character.name }}</h2>
         <header>Present the evidences you found</header>
         <form action="/accuse_character/{{ character.id }}" method="POST">
-            <input type="textarea" cols="50" rows="10" id="evidences" name="evidences"></textarea>
-            <input type="submit" >
-
+            <textarea id="evidences" name="evidences" cols="50" rows="10"></textarea>
+            <br>
+            <input class="input-visible" type="submit" value="Submit Accusation">
         </form>
         <div class="flashcard">
-
-                {{ validation }}
-
+            {{ validation }}
         </div>
     </div>
-     <nav class="universal">
+    <nav class="universal">
         <a href="/">Home</a>
-
     </nav>
 </body>
 </html>

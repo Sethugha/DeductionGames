@@ -15,8 +15,8 @@
         <div class="box">
         <h2>{{ clue.clue_name }}</h2>
 
-            <div class="flashcard">
-                <strong>{{ clue.clue_description }}:</strong>
+            <div class="flashcard-case">
+                <strong>{{ clue.clue_description }}:</strong><br>
 
                 {% if details %}
                  {{ details }}
@@ -27,6 +27,9 @@
         </div>
     </div>
 
-
+    <nav class="universal">
+        <a href="/">Home</a><br>
+        <a href="/select_case">Back to Characters and Clues</a>
+    </nav>
 </body>
 </html>

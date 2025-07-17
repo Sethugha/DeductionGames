@@ -4,37 +4,128 @@
     <meta charset="UTF-8">
     <title>Deduction Games</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
 
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        form {
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        label {
+            font-size: 1.2em;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        select {
+            width: 80%;
+            max-width: 400px;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fafafa;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        select option {
+            padding: 8px;
+        }
+
+        .input-visible[type="submit"] {
+            margin-top: 15px;
+            padding: 10px 20px;
+            font-size: 1em;
+            border: none;
+            border-radius: 6px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .input-visible[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .messenger {
+            text-align: center;
+            padding: 12px;
+            background-color: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            color: #2e7d32;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .no-cases {
+            color: #888;
+            font-style: italic;
+            margin: 10px 0 20px 0;
+        }
+    </style>
 </head>
 <body>
+    <div><h1>Deduction Game Generator</h1></div>
     {% if message %}
-        <div class="message">{{ message }}</div>
+        <div class="messenger">{{ message }}</div>
     {% endif %}
-    <div class="container" style="max-width:800px; margin:auto; display:block;">
-        <form action="/generate_case" method="POST" id="generate_case" style="margin-bottom:32px; text-align:center;">
-           <label for="pick_text" style="font-size:1.2em; font-weight:bold;">Pick a story to create a new case</label><br>
-              <select name="text_id" id="pick_text" size="5" style="width:80%; max-width:400px; margin:10px auto; display:block;">
+
+    <div class="container">
+        <form action="/generate_case" method="POST" id="generate_case">
+           <label for="pick_text">Pick a story to create a new case</label>
+           <select name="text_id" id="pick_text" size="5">
               {% for text in stories %}
               <option value="{{ text.id }}">No. {{ text.id }}: {{ text.title }} from {{ text.author }}</option>
               {% endfor %}
-              </select>
-            <input type="submit" value="Generate case" style="margin-top:10px;">
+           </select>
+           <input class="input-visible" type="submit" value="Generate case">
         </form>
-        <div class="container-vert" style="text-align:center;">
-            <label for="pick_case" style="font-size:1.2em; font-weight:bold;">Pick a case</label><br>
-        {% if cases %}
-        <form action="/select_case" method="POST" id="select_case" style="margin-bottom:32px; text-align:center;">
-            <select name="case_id" id="pick_case" size="5" style="width:80%; max-width:400px; margin:10px auto; display:block;">
-              {% for case in cases %}
-              <option value="{{ case.id }}">No. {{ case.id }}: {{ case.title }}: {{ case.status }}</option>
-              {% endfor %}
-              </select>
-                 <input type="submit" value="Select case" style="margin-top:10px;">
-         </form>
-         {% else %}
-            <div style="color:#888; margin:10px 0 20px 0;">Keine Fälle vorhanden. Bitte erst einen Fall generieren.</div>
-         {% endif %}
+
+        <div class="container-vert">
+
+            {% if cases %}
+            <form action="/select_case" method="POST" id="select_case">
+                 <label for="pick_case">Pick a case</label>
+                <select name="case_id" id="pick_case" size="5">
+                  {% for case in cases %}
+                  <option value="{{ case.id }}">No. {{ case.id }}: {{ case.title }}: {{ case.status }}</option>
+                  {% endfor %}
+                </select>
+
+                <input class="input-visible" type="submit" value="Select case">
+
+            </form>
+            {% else %}
+                <div class="no-cases">Keine Fälle vorhanden. Bitte erst einen Fall generieren.</div>
+            {% endif %}
         </div>
     </div>
-   </body>
+    <nav class="universal">
+        <a href="/">Home</a>
+        <a href="/add_text">Add new Story</a>
+    </nav>
+</body>
 </html>

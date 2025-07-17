@@ -3,43 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>Case</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
 
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .box, .box-narrow {
+            margin-bottom: 30px;
+        }
+
+
+        form {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        input[type="submit"] {
+
+            margin-bottom: 15px;
+            padding: 8px 16px;
+            font-size: 0.95em;
+            border: none;
+            border-radius: 6px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #43a047;
+        }
+    </style>
 </head>
 <body>
+<div class="Container"><h2>Currently involved characters and known Evidences</h2></div>
+    <div class="outerContainer">
 
-    <div class="container-narrow">
-
-
-        <div class="box-narrow">
-        <h2>Characters</h2>
-
-        {% for character in characters %}
-            <form action="/view_character/{{ character.id }}" method="GET">
-            <div class="flashcard">
-                <strong>{{ character.name }}:</strong> {{ character.role }}</div>
-            <input type="submit" value={{ character.id }}>
-            </form>
-
-        {% endfor %}
+    <div class="container-cardbox">
+        <div class="box">
+            <h2>Characters</h2>
+            {% for character in characters %}
+                <form action="/view_character/{{ character.id }}" method="GET">
+                    <div class="flashcard">
+                        <strong>{{ character.name }}:</strong> {{ character.role }}
+                    </div>
+                    <input type="submit" value="View Character #{{ character.id }}">
+                </form>
+            {% endfor %}
         </div>
-
     </div>
-    <div class="container">
 
-      <div class="box">
-      <h2>Clues</h2>
-
-        {% for clue in clues %}
-          <form action="/view_hint/{{ clue.id }}" method="GET">
-             <div class="flashcard">
-                <strong>{{ clue.clue_name }}:</strong>{{ clue.description }}<br>{{ clue.clue_details }}</div>
-             <input type="submit" value={{ clue.id }}>
-          </form>
-        {% endfor %}
-
-      </div>
+    <div class="container-cardbox">
+        <div class="box">
+            <h2>Clues</h2>
+            {% for clue in clues %}
+                <form action="/view_hint/{{ clue.id }}" method="GET">
+                    <div class="flashcard">
+                        <strong>{{ clue.clue_name }}:</strong> {{ clue.description }}<br>
+                        <small>{{ clue.clue_details }}</small>
+                    </div>
+                    <input type="submit" value="View Clue #{{ clue.id }}">
+                </form>
+            {% endfor %}
+        </div>
     </div>
+
+</div>
+<nav class="universal">
+        <a href="/">Home</a>
+
+        </nav>
 </body>
 </html>
