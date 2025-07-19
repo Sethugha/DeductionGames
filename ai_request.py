@@ -28,9 +28,7 @@ genai.configure(api_key=API_KEY)
 
 # List available models an pick the right one
 available_models = [m.name for m in genai.list_models()]
-print("Available Models:", available_models)
-
-
+#print("Available Models:", available_models)
 
 
 class AIRequest():
@@ -68,18 +66,16 @@ class AIRequest():
                 Case description: Brief description
                 Characters as list of dictionaries with keys name and role
                 Clues as list of dictionaries, keys are clue_name, description and details
-                questions as list,
                 Solution as dictionary using keys: 
                 culprit: The villain
                 method: How the crime was done
                 evidence: The clue details leading to this deduction
-                
                 """
         response = self.model.generate_content(prompt)
         response_text = response.text.strip()
         # Remove Markdown-Code-Block-Format
         response_text = response_text.replace('```json', '').replace('```', '').strip()
-        print(response_text)
+
         # Validiere und verarbeite die Antwort
         result = json.loads(response_text)
         return (result)
@@ -138,7 +134,6 @@ class AIRequest():
                 You cannot lie but if you are the culprit, 
                 you are interested in covering up your participation.
                 Answer in english
-
                 """
         response = self.model.generate_content(prompt)
         response_text = response.text.strip()
@@ -159,9 +154,10 @@ class AIRequest():
                 Based on {data_string}, you are the character {character}.
                 The interrogator accuses you to be the culprit and presents the evidences {evidences}.
                 If the evidences cover more than 80% of the real happening, 
-                the character will confess method and motive of the crime. 
-                Answer in english
-
+                the character will confess method and motive of the crime.
+                If the character is not the culprit,
+                the character will laugh the investigator down.
+                Answer in english.  
                 """
         response = self.model.generate_content(prompt)
         response_text = response.text.strip()
@@ -169,5 +165,25 @@ class AIRequest():
         response_text = response_text.replace('```json', '').replace('```', '').strip()
         # Validiere und verarbeite die Antwort
         # result = json.loads(response_text)
+        return (response_text)
 
+
+    def search_indicators(self, data_string, search_str):
+        """
+        Accusing a suspect you present the evidences you found.
+        The culprit will give up.
+        """
+        prompt = f"""
+                        Based on {data_string}, reveal
+                        details which are part of the original text
+                        and match at least the nouns contained in 
+                        {search_str}.
+                        Answer in english.
+                        """
+        response = self.model.generate_content(prompt)
+        response_text = response.text.strip()
+        # Remove Markdown-Code-Block-Format
+        response_text = response_text.replace('```json', '').replace('```', '').strip()
+        # Validiere und verarbeite die Antwort
+        # result = json.loads(response_text)
         return (response_text)

@@ -202,11 +202,11 @@ def ask_character():
     char_id = request.form.get('char_id')
     clue_id = request.form.get('pick_clue')
     question = request.form.get('own_question')
-    character = db.session.query(Character).filter(Character.id==char_id).first()
-    clue = db.session.query(Clue).filter(Clue.id==clue_id).first()
-    clues = db.session.query(Clue).filter(Clue.case_id == character.case_id).all()
-    case = db.session.query(Case).filter(Case.id==character.case_id).first()
-    text = db.session.query(Text).filter(Text.id==case.source).first()
+    character = storage.retrieve_character_by_id(char_id)
+    clue = storage.retrieve_clue_details_from_clue_id(clue_id)
+    clues = storage.read_clues_of_single_case(character.case_id)
+    case = storage.read_case_from_db(clue.case_id)
+    text = storage.retrieve_text_for_single_case(case.source)
     if question:
         interrogation = ai_client.ai_interrogation(text.content, character, question)
     else:
@@ -221,17 +221,33 @@ def accuse_character(id):
     since this is a serious crime, evidences must be presented.
     Evidences are presented to AI.
     """
-    character = db.session.query(Character).filter(Character.id==id).first()
-    case = db.session.query(Case).filter(Case.id==character.case_id).first()
-    text = db.session.query(Text).filter(Text.id==case.source).first()
+    character = storage.retrieve_character_by_id(id)
+    case = storage.read_case_from_db(character.case_id)
+    text = storage.retrieve_text_for_single_case(case.source)
     if request.method == 'POST':
         evidences = request.form.get('evidences')
-        print("evidences: ", evidences)
+        #print("evidences: ", evidences)
         if evidences:
             validation = ai_client.ai_accusation(text.content, character, evidences)
             #print("answer: ", validation) #debug
             return render_template('accusation.html', character=character, evidences=evidences, validation=validation )
     return render_template('accusation.html', character=character)
+
+
+@app.route('/search_indicators', methods=['GET','POST'])
+def search_indicators():
+    """Search for additional indicators like items or trails
+     to get more details"""
+    clue_id = request.form.get('clue_id')
+    clue = storage.retrieve_clue_details_from_clue_id(clue_id)
+    case = storage.read_case_from_db(clue.case_id)
+    text = storage.retrieve_text_for_single_case(case.source)
+    search_str = request.form.get('indicators')
+    if search_str:
+        new_indicators = ai_client.search_indicators(text.content, search_str)
+        print("New Indicators: ", new_indicators)
+        return render_template('indicators.html', indicators=new_indicators, clue=clue)
+    return render_template('indicators.html', clue=clue)
 
 
 if __name__ == "__main__":

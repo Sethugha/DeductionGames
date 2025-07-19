@@ -17,13 +17,17 @@
 
             <div class="flashcard-case">
                 <strong>{{ clue.clue_description }}:</strong><br>
-
                 {% if details %}
                  {{ details }}
                 {% endif %}
-
             </div>
-
+            <div class="flashcard-case">
+                <form class="form-character" action="/search_indicators" method="POST" id="find_indicators" style="margin-bottom:32px; text-align:center;">
+                    <label>Look for indicators<br><input type="text" id="indicators" name="indicators"></label><br>
+                    <input class="input-hidden" type="text" id="clue_id" name="clue_id" value="{{ clue.id }}" form="find_indicators" hidden>
+                    <input class="input-visible" type="submit" value="Search Indicators"  style="margin-top:10px;">
+                </form>
+            </div>
         </div>
     </div>
 

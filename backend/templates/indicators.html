@@ -1,0 +1,10 @@
+{% extends "hint_detail.html" %}
+
+{% block content %}
+    <div class="flashcard-character">
+        <strong>New Indicators:</strong><br>
+            {% if indicators %}
+            {{ indicators }}
+            {% endif %}
+    </div>
+{% endblock %}
