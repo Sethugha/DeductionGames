@@ -34,27 +34,33 @@ def home():
 
 
 @app.route('/select_case', methods=['GET','POST'])
-def pick_case():
+def select_case():
     """
     Pick an unresolved case from list to continue a previous game
     :return:
     """
     case_id = request.form.get('case_id')
+    cases = storage.retrieve_entity_from_db(Case)
     if case_id:
-        case = storage.read_case_from_db(case_id)
-
-        if case:
-            characters = storage.read_characters_of_single_case(case_id)
-            clues = storage.read_clues_of_single_case(case_id)
-            text = storage.retrieve_text_for_single_case(case.source)
-            title = getattr(text, 'title', None) or case.title or "Case"
-            return render_template(
-                'card_boxes.html',
-                case=case,
-                title=title,
-                characters=characters,
-                clues=clues
-            )
+        for case in cases:
+            storage.change_case_status(case.id, 'open')
+        storage.change_case_status(case_id, 'active')
+        case = storage.read_entity_by_id(Case, case_id)
+        if not case:
+            case = storage.retrieve_case_by_status('active')
+        print(case)
+        exit()
+        characters = storage.read_characters_of_single_case(case.id)
+        clues = storage.read_clues_of_single_case(case.id)
+        text = storage.read_entity_by_id(Text, case.source)
+        title = getattr(text, 'title', None) or case.title or "Case"
+        return render_template(
+                                'card_boxes.html',
+                                case=case,
+                                title=title,
+                                characters=characters,
+                                clues=clues
+                                )
     return redirect(url_for('home'))
 
 
@@ -74,15 +80,13 @@ def generate_case():
     """
     stories = storage.retrieve_entity_from_db(Text)
     cases = storage.retrieve_entity_from_db(Case)
-    #stories = db.session.query(Text).all()
-    #cases = db.session.query(Case).all()
     text_id = request.form.get('text_id')
     if not text_id:
         return render_template('home.html',
                                stories=stories,
                                cases=cases,
                                message="Please select a Story to convert.")
-    text = storage.retrieve_text_for_single_case(text_id)
+    text = storage.read_entity_by_id(Text, text_id)
     if not text:
         return render_template('home.html',
                                stories=stories,
@@ -174,11 +178,11 @@ def view_hint(clue_id):
     """
     Returns further information about a single clue.
     """
-    clue = storage.retrieve_clue_details_from_clue_id(clue_id)
-    case = storage.read_case_from_db(clue.case_id)
-    text = storage.retrieve_text_for_single_case(case.source)
-    result = ai_client.ai_hint_request(text.content, clue)
-    return render_template('hint_detail.html', clue=clue, details=result)
+    clue = storage.read_entity_by_id(Clue, clue_id)
+    case = storage.read_entity_by_id(Case, clue.case_id)
+    text = storage.read_entity_by_id(Text, case.source)
+    ai_response = ai_client.ai_hint_request(text.content, clue)
+    return render_template('hint_detail.html', clue=clue, details=ai_response)
 
 
 @app.route('/view_character/<character_id>', methods=['GET','POST'])
@@ -186,12 +190,12 @@ def view_character(character_id):
     """
     Returns further information about a single character.
     """
-    character = storage.retrieve_character_by_id(character_id)
-    case = storage.read_case_from_db(character.case_id)
-    text = storage.retrieve_text_for_single_case(case.source)
-    hints = storage.read_clues_of_single_case(character.case_id)
-    result = ai_client.ai_character_request(text.content, character)
-    return render_template('character_detail.html', character=character, details=result, clues=hints)
+    character = storage.read_entity_by_id(Character, character_id)
+    case = storage.read_entity_by_id(Case, character.case_id)
+    text = storage.read_entity_by_id(Text, case.source)
+    clues = storage.read_clues_of_single_case(character.case_id)
+    ai_response = ai_client.ai_character_request(text.content, character)
+    return render_template('character_detail.html', character=character, details=ai_response, clues=clues)
 
 
 @app.route('/ask_character', methods=['GET','POST'])
@@ -202,11 +206,11 @@ def ask_character():
     char_id = request.form.get('char_id')
     clue_id = request.form.get('pick_clue')
     question = request.form.get('own_question')
-    character = storage.retrieve_character_by_id(char_id)
-    clue = storage.retrieve_clue_details_from_clue_id(clue_id)
+    character = storage.read_entity_by_id(Character, char_id)
+    clue = storage.read_entity_by_id(Clue, clue_id)
     clues = storage.read_clues_of_single_case(character.case_id)
-    case = storage.read_case_from_db(clue.case_id)
-    text = storage.retrieve_text_for_single_case(case.source)
+    case = storage.read_entity_by_id(Case, character.case_id)
+    text = storage.read_entity_by_id(Text, case.source)
     if question:
         interrogation = ai_client.ai_interrogation(text.content, character, question)
     else:
@@ -221,16 +225,16 @@ def accuse_character(id):
     since this is a serious crime, evidences must be presented.
     Evidences are presented to AI.
     """
-    character = storage.retrieve_character_by_id(id)
-    case = storage.read_case_from_db(character.case_id)
-    text = storage.retrieve_text_for_single_case(case.source)
+    character = storage.read_entity_by_id(Character, id)
+    case = storage.read_entity_by_id(Case, character.case_id)
+    text = storage.read_entity_by_id(Text, case.source)
     if request.method == 'POST':
         evidences = request.form.get('evidences')
         #print("evidences: ", evidences)
         if evidences:
-            validation = ai_client.ai_accusation(text.content, character, evidences)
+            ai_response = ai_client.ai_accusation(text.content, character, evidences)
             #print("answer: ", validation) #debug
-            return render_template('accusation.html', character=character, evidences=evidences, validation=validation )
+            return render_template('accusation.html', character=character, evidences=evidences, validation=ai_response)
     return render_template('accusation.html', character=character)
 
 
@@ -239,14 +243,14 @@ def search_indicators():
     """Search for additional indicators like items or trails
      to get more details"""
     clue_id = request.form.get('clue_id')
-    clue = storage.retrieve_clue_details_from_clue_id(clue_id)
-    case = storage.read_case_from_db(clue.case_id)
-    text = storage.retrieve_text_for_single_case(case.source)
+    clue = storage.read_entity_by_id(Clue, clue_id)
+    case = storage.read_entity_by_id(Case, clue.case_id)
+    text = storage.read_entity_by_id(Text, case.source)
     search_str = request.form.get('indicators')
     if search_str:
-        new_indicators = ai_client.search_indicators(text.content, search_str)
-        print("New Indicators: ", new_indicators)
-        return render_template('indicators.html', indicators=new_indicators, clue=clue)
+        ai_response = ai_client.search_indicators(text.content, search_str)
+        print("New Indicators: ", ai_response)
+        return render_template('indicators.html', indicators=ai_response, clue=clue)
     return render_template('indicators.html', clue=clue)
 
 

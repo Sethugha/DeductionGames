@@ -68,3 +68,13 @@ class Solution(db.Model):
 
     def __repr__(self):
         return f"Solution: {self.culprit} used {self.method}."
+
+
+class Prompt(db.Model):
+    __tablename__ = 'prompts'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    title = db.Column(db.String)
+    content = db.Column(db.String)
+
+    def __repr__(self):
+        return f"Prompt: {self.title}"

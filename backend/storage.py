@@ -1,7 +1,7 @@
 import json
 import utilities
 import os.path
-from data_models import db, Clue, Text, Case, Character, Solution
+from data_models import db, Clue, Text, Case, Character, Solution, Prompt
 from sqlalchemy import func, and_
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError, PendingRollbackError
@@ -106,21 +106,22 @@ def retrieve_case_via_source_text(source):
 
 
 
-def read_case_from_db(id):
-    """retrieves an unresolved case from db to continue an old game.
-    :param case_id: The Id of the searched case
-    :return: case object
+def read_entity_by_id(entity,id):
+    """retrieves an unresolved 'entity' from db to continue an old game.
+    :param id: The Id of the desired entity object
+    :return: entity object
     """
+    if entity not in [Case, Character, Clue, Prompt, Solution, Text]:
+        return f"Invalid entity {entity}"
     if isinstance(id, str) and id.isdigit():
         id = int(id)
     if isinstance(id, int):
         try:
-            case = db.session.query(Case).filter(and_(Case.id == id, Case.status == 'open')) \
-                   .first()
-            return case
+            data = db.session.query(entity).filter(entity.id == id).first()
+            return data
         except Exception as e:  # For Debugging and Testing catch all Exceptions
             return f"DB Access failed: Exception {e}."
-    return "Error! Invalid Case Id"
+    return f"Error! Invalid {entity}.id Id"
 
 
 def read_characters_of_single_case(case_id):
@@ -170,7 +171,7 @@ def retrieve_text_for_single_case(id):
     return "Error! Invalid Id"
 
 
-def retrieve_clue_details_from_clue_id(id):
+def retrieve_clue_from_id(id):
     """given a clue_id the complete corresponding row is retrieved.
     :parameter id: Clue Id
     :return: clue object
@@ -224,10 +225,12 @@ def change_case_status(id, status):
     return "Error! Invalid Id"
 
 
-def retrieve_case_by_status():
-    """find a case with status 'active' and return its id"""
+def retrieve_case_by_status(status):
+    """find a case with status 'status' and return its id"""
+    if status.lower() not in ['active', 'open', 'solved']:
+        status = 'active'
     try:
-        case = db.session.query(Case).filter(Case.status == 'active').first()
+        case = db.session.query(Case).filter(Case.status == status).first()
         if case:
             return case
         return None
