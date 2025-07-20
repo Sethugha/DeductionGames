@@ -30,10 +30,10 @@
        <div class="box">
            <span id="char_name"><h3>Ask {{ character.name }} about</h3></span>
            <form class="form-character" action="/ask_character" method="POST" id="ask_character" style="margin-bottom:32px; text-align:center;">
-           <label for="pick_clue" style="font-size:1.2em; font-weight:bold;">Pick a clue to interrogate character about it.</label><br>
+
               <select name="pick_clue" id="pick_clue" size="5" style="width:80%; max-width:400px; margin:10px auto; display:block;">
                 {% for clue in clues %}
-                    <option value="{{ clue.id }}">No: {{ clue.id }} {{ clue.clue_name }}</option>
+                    <option value="{{ clue.id }}">{{ clue.clue_name }}</option>
                 {% endfor %}
               </select>
             <label>Ask own question<br><input type="text" id="own_question" name="own_question"></label><br>

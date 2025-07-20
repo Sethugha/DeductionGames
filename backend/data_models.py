@@ -8,9 +8,9 @@ class Case(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String)
     description = db.Column(db.String)
+    solution = db.Column(db.Integer, db.ForeignKey('solutions.id'))
     status = db.Column(db.String(10))
     source = db.Column(db.Integer, db.ForeignKey('texts.id'))
-
 
     def __repr__(self):
         return f"Case (id = {self.id}, description = {self.description}"

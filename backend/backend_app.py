@@ -12,7 +12,7 @@ from ai_request import AIRequest
 import datetime
 
 #store absolute path to database file
-DB_PATH=path.abspath(path.join(path.dirname(__file__), path.join('data', 'deduction_games.db')))
+DB_PATH=path.abspath(path.join(path.dirname(__file__), path.join('data', 'deduction_games_old.db')))
 #store current date for validations
 #CURRENT_DATE=datetime.date.now()
 
@@ -29,7 +29,6 @@ def home():
     """ Route to home page with Story-selection and stats."""
     cases = storage.retrieve_entity_from_db(Case)
     stories = storage.retrieve_entity_from_db(Text)
-
     return render_template('home.html', stories=stories, cases=cases, message="")
 
 
@@ -39,29 +38,39 @@ def select_case():
     Pick an unresolved case from list to continue a previous game
     :return:
     """
-    case_id = request.form.get('case_id')
-    cases = storage.retrieve_entity_from_db(Case)
-    if case_id:
-        for case in cases:
-            storage.change_case_status(case.id, 'open')
-        storage.change_case_status(case_id, 'active')
-        case = storage.read_entity_by_id(Case, case_id)
-        if not case:
-            case = storage.retrieve_case_by_status('active')
-        print(case)
-        exit()
-        characters = storage.read_characters_of_single_case(case.id)
-        clues = storage.read_clues_of_single_case(case.id)
-        text = storage.read_entity_by_id(Text, case.source)
-        title = getattr(text, 'title', None) or case.title or "Case"
-        return render_template(
-                                'card_boxes.html',
-                                case=case,
-                                title=title,
-                                characters=characters,
-                                clues=clues
-                                )
-    return redirect(url_for('home'))
+    if request.method == 'POST':
+        case_id = request.form.get('case_id')
+        if case_id:
+            cases = storage.retrieve_entity_from_db(Case)
+            for case in cases:
+                storage.change_case_status(case.id, 'open')
+            storage.change_case_status(case_id, 'active')
+            case = storage.read_entity_by_id(Case, case_id)
+            if case:
+                characters = storage.read_characters_of_single_case(case.id)
+                clues = storage.read_clues_of_single_case(case.id)
+                text = storage.read_entity_by_id(Text, case.source)
+                title = getattr(text, 'title', None) or case.title or "Case"
+                return render_template(
+                                    'card_boxes.html',
+                                    case=case,
+                                    title=title,
+                                    characters=characters,
+                                    clues=clues
+                                    )
+
+    case = storage.retrieve_case_by_status('active')
+    characters = storage.read_characters_of_single_case(case.id)
+    clues = storage.read_clues_of_single_case(case.id)
+    title = case.title
+    return render_template(
+         'card_boxes.html',
+                           case=case,
+                           title=title,
+                           characters=characters,
+                           clues=clues
+                          )
+
 
 
 @app.route('/generate_case',methods=['GET','POST'])
@@ -211,10 +220,11 @@ def ask_character():
     clues = storage.read_clues_of_single_case(character.case_id)
     case = storage.read_entity_by_id(Case, character.case_id)
     text = storage.read_entity_by_id(Text, case.source)
+    solution = storage.read_entity_by_id(Solution, case.solution)
     if question:
-        interrogation = ai_client.ai_interrogation(text.content, character, question)
+        interrogation = ai_client.ai_interrogation(text.content, character, question, solution)
     else:
-        interrogation = ai_client.ai_interrogation(text.content, character, clue)
+        interrogation = ai_client.ai_interrogation(text.content, character, clue , solution)
     return render_template('character_detail.html', character=character, interrogation=interrogation,
                            clues=clues)
 
@@ -230,9 +240,9 @@ def accuse_character(id):
     text = storage.read_entity_by_id(Text, case.source)
     if request.method == 'POST':
         evidences = request.form.get('evidences')
-        #print("evidences: ", evidences)
         if evidences:
-            ai_response = ai_client.ai_accusation(text.content, character, evidences)
+            solution = storage.retrieve_solution_by_case_id(case.id)
+            ai_response = ai_client.ai_accusation(text.content, character, evidences, solution)
             #print("answer: ", validation) #debug
             return render_template('accusation.html', character=character, evidences=evidences, validation=ai_response)
     return render_template('accusation.html', character=character)
@@ -248,9 +258,9 @@ def search_indicators():
     text = storage.read_entity_by_id(Text, case.source)
     search_str = request.form.get('indicators')
     if search_str:
-        ai_response = ai_client.search_indicators(text.content, search_str)
-        print("New Indicators: ", ai_response)
-        return render_template('indicators.html', indicators=ai_response, clue=clue)
+        indicators = ai_client.search_indicators(text.content, search_str, clue)
+        print("New Indicators: ", indicators)
+        return render_template('indicators.html', indicators=indicators, clue=clue)
     return render_template('indicators.html', clue=clue)
 
 

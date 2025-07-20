@@ -124,15 +124,16 @@ class AIRequest():
         return (response_text)
 
 
-    def ai_interrogation(self, data_string, character, clue):
+    def ai_interrogation(self, data_string, character, clue, solution):
         """
         Order information about a clue or suspect.
         """
         prompt = f"""
                 Based on {data_string}, you are the character {character}.
-                The interrogator asks you about {clue}.
-                You cannot lie but if you are the culprit, 
-                you are interested in covering up your participation.
+                The interrogator asks you about additional information
+                associated to {clue}. If the question matches details which are 
+                associated to {clue} and {solution}, never answer 
+                with a blatant lie but you will not immediately lay your cards on the table.
                 Answer in english
                 """
         response = self.model.generate_content(prompt)
@@ -145,7 +146,7 @@ class AIRequest():
         return (response_text)
 
 
-    def ai_accusation(self, data_string, character, evidences):
+    def ai_accusation(self, data_string, character, evidences, solution):
         """
         Accusing a suspect you present the evidences you found.
         The culprit will give up.
@@ -153,10 +154,9 @@ class AIRequest():
         prompt = f"""
                 Based on {data_string}, you are the character {character}.
                 The interrogator accuses you to be the culprit and presents the evidences {evidences}.
-                If the evidences cover more than 80% of the real happening, 
-                the character will confess method and motive of the crime.
-                If the character is not the culprit,
-                the character will laugh the investigator down.
+                If the evidences cover more than 50% of {solution}, 
+                the character will break down and confess method and motive of the crime.
+                otherwise the character will laugh the investigator down.
                 Answer in english.  
                 """
         response = self.model.generate_content(prompt)
@@ -168,22 +168,21 @@ class AIRequest():
         return (response_text)
 
 
-    def search_indicators(self, data_string, search_str):
+    def search_indicators(self, data_string, search_str, clue):
         """
-        Accusing a suspect you present the evidences you found.
-        The culprit will give up.
+        Look for additional indicators at a crime scene.
         """
         prompt = f"""
-                        Based on {data_string}, reveal
-                        details which are part of the original text
-                        and match at least the nouns contained in 
-                        {search_str}.
+                        You are the investigator, looking for indicators 
+                        which could deliver additional information about {clue}.
+                        Details which are part of {data_string} and are 
+                        associated with {clue} should match the gist of {search_str} to be mentioned.
+                        If there is no match simply answer like:
+                        'Nothing special caught your eye'.  
                         Answer in english.
                         """
         response = self.model.generate_content(prompt)
         response_text = response.text.strip()
         # Remove Markdown-Code-Block-Format
         response_text = response_text.replace('```json', '').replace('```', '').strip()
-        # Validiere und verarbeite die Antwort
-        # result = json.loads(response_text)
         return (response_text)

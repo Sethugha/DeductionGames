@@ -106,7 +106,7 @@ def retrieve_case_via_source_text(source):
 
 
 
-def read_entity_by_id(entity,id):
+def read_entity_by_id(entity, id):
     """retrieves an unresolved 'entity' from db to continue an old game.
     :param id: The Id of the desired entity object
     :return: entity object
@@ -236,3 +236,17 @@ def retrieve_case_by_status(status):
         return None
     except Exception as e:  # For Debugging and Testing catch all Exceptions
         return f"DB Access failed: Exception {e}."
+
+
+def retrieve_solution_by_case_id(id):
+    """Retrieve the case´s solution"""
+    if isinstance(id, str) and id.isdigit():
+        id = int(id)
+    if isinstance(id, int):
+        try:
+            solution = db.session.query(Solution).filter(Solution.case_id == id).first()
+            if solution:
+                return solution
+            return None
+        except Exception as e:  # For Debugging and Testing catch all Exceptions
+            return f"DB Access failed: Exception {e}."
