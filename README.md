@@ -1,7 +1,7 @@
 # 📚 Generator for deduction games based on your favorite books
 
 A **Deduction Game Generator** built with **Python**, featuring a Flask-based REST API and SQLAlchemy for ORM-backed database access. 
-The frontend is designed with **JavaScript**, with a focus on **senior-friendly usability** through an intuitive and accessible UI.
+The frontend is still primitive  but allows playing.
 Currently the frontend is not separated from the backend thus it is at time not necessary to implement CORS.
 ---
 
@@ -15,11 +15,8 @@ Currently the frontend is not separated from the backend thus it is at time not 
 
 ### ✨ Features
 
-* 🔧 **CRUD Operations** for 
-* 🧓 **Senior-friendly UI:** large buttons, clear labels, and simple navigation
-* 🔗 **RESTful API** with clean endpoint structure
-* 🗄️ **Persistent Storage** using SQLAlchemy ORM
-* 📑 **Modular Codebase** with separation of concerns between UI, logic, and database access
+Text import via copy & paste or file upload.
+Should be able to create a deduction game from every story but for texting purposes I used detective short stories which work well.
 
 ---
 
@@ -59,16 +56,9 @@ Frontend files are located in `/static` and served directly via Flask.
 ### 👩‍💻 Future Enhancements
 
 * [ ] User authentication and roles
-* [ ] Search and filter functionality
 * [ ] UI internationalization/localization
 * [ ] Dark mode toggle
+* [ ] Online story access 
 
 ---
 
-### 🧠 Inspiration & Accessibility
-
-This project was designed with real-world usability in mind, especially for **older users** who benefit from simplified interfaces. The visual design avoids clutter and prioritizes legibility and ease of use.
-
----
-
-Let me know if you want to add deployment instructions (e.g., for Heroku, Docker), a license, or contributor section!
