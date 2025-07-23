@@ -1,21 +1,13 @@
-from flask import Flask,render_template, request, jsonify, redirect, url_for, make_response
-from sqlalchemy import desc, and_
-
-import ai_request
+from flask import Flask,render_template, request
 from data_models import db, Character, Case, Clue, Text, Solution
 from os import path
 import config
 #import utilities
 import storage
-import json, csv
 from ai_request import AIRequest
-import datetime
 
 #store absolute path to database file
 DB_PATH=path.abspath(path.join(path.dirname(__file__), path.join('data', 'deduction_games_old.db')))
-#store current date for validations
-#CURRENT_DATE=datetime.date.now()
-
 
 #create Flask instance
 app = Flask(__name__)
@@ -243,7 +235,9 @@ def accuse_character(id):
         if evidences:
             solution = storage.retrieve_solution_by_case_id(case.id)
             ai_response = ai_client.ai_accusation(text.content, character, evidences, solution)
-            #print("answer: ", validation) #debug
+            print("character: ", character) #debug
+            print("evidences: ", evidences)
+            print("solution: ", solution)
             return render_template('accusation.html', character=character, evidences=evidences, validation=ai_response)
     return render_template('accusation.html', character=character)
 

@@ -4,21 +4,19 @@ ai_request.py - Interface to Google Gemini AI
 """
 import os
 import json
-import requests
-from typing import Optional, Dict, List
 from dotenv import load_dotenv
 import google.generativeai as genai
 from google.generativeai.types import GenerationConfig
 
-# Lade Umgebungsvariablen
+# Load environment vars
 load_dotenv()
 
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 
-# Konfiguriere die Google AI
+# Configurate Google AI
 generation_config = GenerationConfig(
-    temperature=0.9,
+    temperature=0.2,
     top_p=1,
     top_k=1,
     max_output_tokens=2048,
@@ -42,34 +40,40 @@ class AIRequest():
                 "models/gemini-2.0-flash",
                 generation_config=generation_config
             )
-            print("AI-Modell successful initialized")
+            self.chat = self.model.start_chat()
+            print("AI-Model successful initialized")
         except Exception as e:
             print(f"Error initializing AI model: {str(e)}")
             raise
 
-    def ai_request(self, data_string: str) -> Dict:
+    def metamorphosis(self, data_string):
         """
         Order the metamorphosis.
         """
         prompt = f"""
-                Answer every question as if you never heard of it even if it´s a repetition from an older question.
-                Based on {data_string}, generate an interactive deduction game scenario.
-                Provide a brief introduction to the case (3–4 sentences).
-                List the characters involved (include suspects and witnesses).
-                List them as list of dictionaries see example below:          
-                Provide 5–7 clues that the player can investigate, some relevant, some misleading.                                
-                The clues should be detailed enough for some logical deduction, but not necessary lead to the solution.
-                User should go deeper into the details to find the solution.
-                At last append the solution. 
-                Answer in json as follows:
-                case_title: a telling name.
-                Case description: Brief description
-                Characters as list of dictionaries with keys name and role
-                Clues as list of dictionaries, keys are clue_name, description and details
-                Solution as dictionary using keys: 
-                culprit: The villain
-                method: How the crime was done
-                evidence: The clue details leading to this deduction
+                You are a script author ordered to create a script for a deduction game
+                out of the given crime story {data_string}.
+                Your complete knowledge about events, evidences and facts arises from the crime story itself.
+                You must not use any knowledge not included in the story.
+                You must not make own deductions.
+                
+                Create a json object as visible below:
+                'title': extracted story title or a telling case title.
+                'introduction': Short description of the crime case (about 5-7 sentences).
+                'characters': Extract the persons contained in {data_string} and deliver a list of dicts,
+                each containing the full name using key 'name' and the person´s role in the story using key'role'.
+                'clues': a list of dictionaries as described below:
+                Every item, occurrence or witness linked to the crime is to store into 
+                'clue_name': name.
+                'clue_description': A brief description of the clue and its possible connection o the crime.
+                'clue_details': A list containing 3 significant attributes pointing to the crime.
+                afterwards extend the clue list 
+                'solution': The perpetrator´s full name.
+                'method': The method how the crime was done matching the story as exactly as possible.
+                'evidences': A list of clue names which are pointing to the crime.
+                extent the clue list by 3-4 red herrings styled exactly like the real clues.       
+                
+                While creating the ip
                 """
         response = self.model.generate_content(prompt)
         response_text = response.text.strip()
@@ -86,12 +90,14 @@ class AIRequest():
         Order information about a clue or suspect.
         """
         prompt = f"""
-                Answer every question as if you never heard of it even 
-                if it´s a repetition from an older question.
-                Based on {data_string}, tell me details about {clue}
-                but do not mention the final purpose.
-                Answer in english
-                
+                You are the investigator in the field. You have studied the known facts
+                they gave you but you examine the crime site hoping to find
+                additional details of {clue}.
+                You must not leave the story frame.
+                Every additional examination of a clue reveals up to 2 new details if these
+                are mentioned within {data_string}.
+                Create an answer in plain english as if it came from an observer
+                informing You afterwards about your findings. 
                 """
         response = self.model.generate_content(prompt)
         response_text = response.text.strip()
@@ -99,7 +105,6 @@ class AIRequest():
         response_text = response_text.replace('```json', '').replace('```', '').strip()
         #Validiere und verarbeite die Antwort
         #result = json.loads(response_text)
-
         return (response_text)
 
     def ai_character_request(self, data_string, character):
@@ -107,12 +112,12 @@ class AIRequest():
         Order information about a clue or suspect.
         """
         prompt = f"""
-                Answer every question as if you never heard of it even 
-                if it´s a repetition from an older question.
-                Based on {data_string}, tell me details about {character}
-                but do not tell if he´s the culprit or not.
-                Answer in english
-
+                You are an actor playing an aquaintance of {character} 
+                from the crime story {data_string}. Your complete knowledge is restricted
+                to events and facts described in this crime story.
+                You must not use any knowledge from outside or draw own conclusions.
+                Answer directly without hedging the questions.
+                Your task is to play the role authentical, not to "win" the interrogation.
                 """
         response = self.model.generate_content(prompt)
         response_text = response.text.strip()
@@ -129,12 +134,11 @@ class AIRequest():
         Order information about a clue or suspect.
         """
         prompt = f"""
-                Based on {data_string}, you are the character {character}.
-                The interrogator asks you about additional information
-                associated to {clue}. If the question matches details which are 
-                associated to {clue} and {solution}, never answer 
-                with a blatant lie but you will not immediately lay your cards on the table.
-                Answer in english
+                You are an actor playing the character {character.name} 
+                from the crime story {data_string}. Your complete knowledge is restricted
+                to events and facts described in this crime story.
+                You must not use any knowledge from outside or draw own conclusions.
+                Your task is to play the role authentical, not to "win" the interrogation.
                 """
         response = self.model.generate_content(prompt)
         response_text = response.text.strip()
@@ -152,12 +156,13 @@ class AIRequest():
         The culprit will give up.
         """
         prompt = f"""
-                Based on {data_string}, you are the character {character}.
-                The interrogator accuses you to be the culprit and presents the evidences {evidences}.
-                If the evidences cover more than 50% of {solution}, 
-                the character will break down and confess method and motive of the crime.
-                otherwise the character will laugh the investigator down.
-                Answer in english.  
+                You are an actor playing the character {character.name} 
+                from the crime story {data_string}, accused of the crime and 
+                confronted with the evidences {evidences}. Your complete knowledge is restricted
+                to events and facts described in this crime story.
+                You must not use any knowledge from outside or draw own conclusions.
+                Your task is to play the role authentical, not to "win" the interrogation.
+                If the evidences cover about 50% of the facts, break down and confess.
                 """
         response = self.model.generate_content(prompt)
         response_text = response.text.strip()
