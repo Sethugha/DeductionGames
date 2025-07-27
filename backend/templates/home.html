@@ -2,130 +2,105 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Deduction Games</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mystery Machine</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
 
-        .container {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        form {
-            margin-bottom: 32px;
-            text-align: center;
-        }
-
-        label {
-            font-size: 1.2em;
-            font-weight: bold;
-            display: block;
-            margin-bottom: 10px;
-        }
-
-        select {
-            width: 80%;
-            max-width: 400px;
-            padding: 10px;
-            font-size: 1em;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            background-color: #fafafa;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
-        }
-
-        select option {
-            padding: 8px;
-        }
-
-        .input-visible[type="submit"] {
-            margin-top: 15px;
-            padding: 10px 20px;
-            font-size: 1em;
-            border: none;
-            border-radius: 6px;
-            background-color: #4CAF50;
-            color: white;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .input-visible[type="submit"]:hover {
-            background-color: #45a049;
-        }
-
-        .messenger {
-            text-align: center;
-            padding: 12px;
-            background-color: #e8f5e9;
-            border: 1px solid #c8e6c9;
-            color: #2e7d32;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .no-cases {
-            color: #888;
-            font-style: italic;
-            margin: 10px 0 20px 0;
-        }
-    </style>
 </head>
 <body>
-    <div><h1>Mystery Machine</h1></div>
-    {% if message %}
-        <div class="messenger">{{ message }}</div>
-    {% endif %}
+  <header>
+        <h1>Mystery Machine</h1>
+         {% if message %}
+        {{ message }}
+        {% endif %}
+  </header>
+  <main class="main-content">
 
-    <div class="container">
-        <form action="/generate_case" method="POST" id="generate_case">
-           <label for="pick_text">Pick a story to create a new case</label>
-           <select name="text_id" id="pick_text" size="5">
-              {% for text in stories %}
-              <option value="{{ text.id }}">No. {{ text.id }}: {{ text.title }} from {{ text.author }}</option>
-              {% endfor %}
-           </select>
-           <input class="input-visible" type="submit" value="Generate case">
-        </form>
+        <!-- Left Side Panel -->
+        <aside class="side-form">
+             <form method="POST" action="/config_ai" id="config_ai">
 
-        <div class="container-vert">
+                <label>Model<input type="text" name="model" id="model" size="10" placeholder="{{ aiconfig.ai_model }}"></label>
+                <label>Role<input type="text" name="role" id="role" size="10" placeholder="{{ aiconfig.ai_role }}"></label>
+                <label>Random Factor<input type="text" name="temp" id="temp" size="10" placeholder="{{ aiconfig.ai_temperature }}"></label>
+                <label>Content Diversity<input type="text" name="top_p" id="top_p" size="5" placeholder="{{ aiconfig.ai_top_p }}"></label>
+                <label>Token/Step<input type="text" name="top_k" id="top_k" size="5" placeholder="{{ aiconfig.ai_top_k }}"></label>
+                <label>Max Token<input type="text" name="max_out" id="max_out" size="10" placeholder="{{ aiconfig.ai_max_out }}"></label>
+                <input type="submit" value="Set" class="input-visible" style="padding: 8px 12px;">
+             </form>
+        </aside>
 
-            {% if cases %}
-            <form action="/select_case" method="POST" id="select_case">
-                 <label for="pick_case">Pick a case</label>
-                <select name="case_id" id="pick_case" size="5">
-                  {% for case in cases %}
-                  <option value="{{ case.id }}">No. {{ case.id }}: {{ case.title }}: {{ case.status }}</option>
-                  {% endfor %}
-                </select>
+        <!-- Central Panel -->
+        <section class="main-panel">
+            {% if stories %}
+            <h2>Select a Story</h2>
+            <div class="selection-row">
+                <form action="/generate_case" method="POST" id="generate_case">
+                    <select name="text_id" id="pick_text" size="5" onInput="setText()">
+                        {% for text in stories %}
+                            <option value="{{ text.id }}">No. {{ text.id }}: {{ text.title }} from {{ text.author }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
 
-                <input class="input-visible" type="submit" value="Select case">
+                <div class="button-column">
 
-            </form>
+                    <input class="input-visible" type="submit" value="Generate Case" form="generate_case">
+                    <form action="/del_text" id="del_text" method="POST">
+                        <input type="text" id="text_id" name="text_id" hidden>
+                    </form>
+                    <input class="input-visible" type="submit" value="Delete Text" form="del_text">
+                </div>
+
             {% else %}
-                <div class="no-cases">Keine Fälle vorhanden. Bitte erst einen Fall generieren.</div>
+                <div class="no-cases" style="text-align:center;">No crime story found. Please add a new story.</div>
             {% endif %}
-        </div>
-    </div>
-    <nav class="universal">
-        <a href="/">Home</a>
-        <a href="/add_text">Add new Story</a>
-    </nav>
+            </div>
+            {% if cases %}
+            <h2>Select a Case</h2>
+            <div class="selection-row">
+                <form action="/select_case" method="POST" id="select_case">
+                    <select name="case_id" id="pick_case" size="5" onInput="setCase()">
+                        {% for case in cases %}
+                            <option value="{{ case.id }}">No. {{ case.id }}: {{ case.title }}: {{ case.status }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+                <div class="button-column">
+                    <input class="input-visible" type="submit" value="Select case" form="select_case">
+                    <form action="/del_case" id="del_case" method="POST">
+                        <input type="text" id="case_id" name="case_id" hidden>
+                    </form>
+                    <input class="input-visible" type="submit" value="Delete Case" form="del_case" style="background-color: red;">
+                    <form action="/analysis" id="analysis" method="GET"></form>
+                    <input class="input-visible" type="submit" value="Analysis" form="analysis">
+                </div>
+
+            {% else %}
+                <div class="no-cases" style="text-align:center;">No mystery cases found. Please use a story from above to generate one.</div>
+            {% endif %}
+            </div>
+            <footer class="universal">
+            <nav>
+               <a href="/">Home</a>
+               <a href="/add_text">Add new Story</a>
+            </nav>
+        </footer>
+        </section>
+
+
+ </div>
+
+<script type='text/javascript'>
+function setCase() {
+ var optionValue = document.getElementById("pick_case").value;
+ document.getElementById("case_id").value = optionValue;
+}
+function setText() {
+ var optionValue = document.getElementById("pick_text").value;
+ document.getElementById("text_id").value = optionValue;
+}
+</script>
 </body>
+
 </html>

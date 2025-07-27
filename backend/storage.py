@@ -1,7 +1,7 @@
 import json
 import utilities
 import os.path
-from data_models import db, Clue, Text, Case, Character, Solution, Prompt
+from data_models import db, Clue, Text, Case, Character, Solution, Prompt, Conversation, AIConfig
 from sqlalchemy import func, and_
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError, PendingRollbackError
@@ -13,6 +13,16 @@ def find_highest_case_id():
     this function retrieves max(case.id) from db
     """
     highest_id = db.session.query(func.max(Case.id)).scalar()
+    if highest_id:
+        return int(highest_id) + 1
+    return 1
+
+
+def find_highest_object_id(entity):
+    """sometimes I need the next possible id of a table.
+    this function retrieves max(id) from entity_table
+    """
+    highest_id = db.session.query(func.max(entity.id)).scalar()
     if highest_id:
         return int(highest_id) + 1
     return 1
@@ -51,6 +61,27 @@ def retrieve_entity_from_db(entity):
     try:
         data = db.session.query(entity).all()
         return data
+    except PendingRollbackError:
+        while db.session.registry().in_transaction():
+            db.session.rollback()
+        return  "operation terminated due to a failed insert or update before,  \
+                 waiting for an orderly rollback. Cleared transaction log of pending \
+                 transactions"
+    except Exception as e:  # For Debugging and Testing catch all Exceptions
+        return f"Something went wrong reading stories: Exception {e}."
+
+
+def retrieve_aiconfig_by_status():
+    """Retrieves the active (status == 1) ai configuration"""
+    try:
+        config = db.session.query(AIConfig).filter(AIConfig.status == 1).first()
+        return config
+    except PendingRollbackError:
+        while db.session.registry().in_transaction():
+            db.session.rollback()
+        return  "operation terminated due to a failed insert or update before,  \
+                 waiting for an orderly rollback. Cleared transaction log of pending \
+                 transactions"
     except Exception as e:  # For Debugging and Testing catch all Exceptions
         return f"Something went wrong reading stories: Exception {e}."
 
@@ -63,8 +94,17 @@ def add_object_to_db_session(object):
     """
     try:
         message = db.session.add(object)
-        #db.session.commit()
-        return message
+        db.session.commit()
+        return f"{object} added successfully to DB"
+    except IntegrityError:
+        db.session.rollback()
+        return f"Another story with the same data already present. Insertion aborted."
+    except PendingRollbackError:
+        while db.session.registry().in_transaction():
+            db.session.rollback()
+        return  "operation terminated due to a failed insert or update before,  \
+                 waiting for an orderly rollback. Cleared transaction log of pending \
+                 transactions"
     except Exception as e:  # For Debugging and Testing catch all Exceptions
         return f"Something went wrong reading stories: Exception {e}."
 
@@ -81,7 +121,7 @@ def import_text_as_json(file):
         message = add_story_to_db(text)
         return message
     except FileNotFoundError:
-        return ("No json file found")
+        return "No json file found"
     except Exception as e:  # For Debugging and Testing catch all Exceptions
         return f"Something went wrong reading json file: Exception {e}."
 
@@ -100,6 +140,12 @@ def retrieve_case_via_source_text(source):
             if case:
                 return True
             return False
+        except PendingRollbackError:
+            while db.session.registry().in_transaction():
+                db.session.rollback()
+            return "operation terminated due to a failed insert or update before,  \
+                     waiting for an orderly rollback. Cleared transaction log of pending \
+                     transactions"
         except Exception as e:  # For Debugging and Testing catch all Exceptions
             return f"Database access failed: {e}."
     return "Error! Invalid Source."
@@ -119,6 +165,12 @@ def read_entity_by_id(entity, id):
         try:
             data = db.session.query(entity).filter(entity.id == id).first()
             return data
+        except PendingRollbackError:
+            while db.session.registry().in_transaction():
+                db.session.rollback()
+            return "operation terminated due to a failed insert or update before,  \
+                     waiting for an orderly rollback. Cleared transaction log of pending \
+                     transactions"
         except Exception as e:  # For Debugging and Testing catch all Exceptions
             return f"DB Access failed: Exception {e}."
     return f"Error! Invalid {entity}.id Id"
@@ -134,6 +186,12 @@ def read_characters_of_single_case(case_id):
         try:
             characters = db.session.query(Character).filter_by(case_id=case_id).all()
             return characters
+        except PendingRollbackError:
+            while db.session.registry().in_transaction():
+                db.session.rollback()
+            return "operation terminated due to a failed insert or update before,  \
+                     waiting for an orderly rollback. Cleared transaction log of pending \
+                     transactions"
         except Exception as e:  # For Debugging and Testing catch all Exceptions
             return f"DB Access failed: Exception {e}."
     return "Error! Invalid Case Id"
@@ -150,6 +208,12 @@ def read_clues_of_single_case(case_id):
         try:
             clues = db.session.query(Clue).filter_by(case_id=case_id).all()
             return clues
+        except PendingRollbackError:
+            while db.session.registry().in_transaction():
+                db.session.rollback()
+            return "operation terminated due to a failed insert or update before,  \
+                     waiting for an orderly rollback. Cleared transaction log of pending \
+                     transactions"
         except Exception as e:  # For Debugging and Testing catch all Exceptions
             return f"DB Access failed: Exception {e}."
     return "Error! Invalid Case Id"
@@ -166,6 +230,12 @@ def retrieve_text_for_single_case(id):
         try:
             text = db.session.query(Text).filter_by(id=id).first()
             return text
+        except PendingRollbackError:
+            while db.session.registry().in_transaction():
+                db.session.rollback()
+            return "operation terminated due to a failed insert or update before,  \
+                     waiting for an orderly rollback. Cleared transaction log of pending \
+                     transactions"
         except Exception as e:  # For Debugging and Testing catch all Exceptions
             return f"DB Access failed: Exception {e}."
     return "Error! Invalid Id"
@@ -182,6 +252,12 @@ def retrieve_clue_from_id(id):
         try:
             clue = db.session.query(Clue).filter_by(id=id).first()
             return clue
+        except PendingRollbackError:
+            while db.session.registry().in_transaction():
+                db.session.rollback()
+            return "operation terminated due to a failed insert or update before,  \
+                     waiting for an orderly rollback. Cleared transaction log of pending \
+                     transactions"
         except Exception as e:  # For Debugging and Testing catch all Exceptions
             return f"DB Access failed: Exception {e}."
     return "Error! Invalid Id"
@@ -198,6 +274,12 @@ def retrieve_character_by_id(id):
         try:
             character = db.session.query(Character).filter_by(id=id).first()
             return character
+        except PendingRollbackError:
+            while db.session.registry().in_transaction():
+                db.session.rollback()
+            return "operation terminated due to a failed insert or update before,  \
+                     waiting for an orderly rollback. Cleared transaction log of pending \
+                     transactions"
         except Exception as e:  # For Debugging and Testing catch all Exceptions
             return f"DB Access failed: Exception {e}."
     return "Error! Invalid Id"
@@ -220,6 +302,12 @@ def change_case_status(id, status):
             case.status = status
             db.session.commit()
             return "Successfully updated case-status"
+        except PendingRollbackError:
+            while db.session.registry().in_transaction():
+                db.session.rollback()
+            return "operation terminated due to a failed insert or update before,  \
+                     waiting for an orderly rollback. Cleared transaction log of pending \
+                     transactions"
         except Exception as e:  # For Debugging and Testing catch all Exceptions
             return f"DB Access failed: Exception {e}."
     return "Error! Invalid Id"
@@ -234,6 +322,12 @@ def retrieve_case_by_status(status):
         if case:
             return case
         return None
+    except PendingRollbackError:
+        while db.session.registry().in_transaction():
+            db.session.rollback()
+        return  "operation terminated due to a failed insert or update before,  \
+                 waiting for an orderly rollback. Cleared transaction log of pending \
+                 transactions"
     except Exception as e:  # For Debugging and Testing catch all Exceptions
         return f"DB Access failed: Exception {e}."
 
@@ -248,5 +342,63 @@ def retrieve_solution_by_case_id(id):
             if solution:
                 return solution
             return None
+        except PendingRollbackError:
+            while db.session.registry().in_transaction():
+                db.session.rollback()
+            return "operation terminated due to a failed insert or update before,  \
+                     waiting for an orderly rollback. Cleared transaction log of pending \
+                     transactions"
         except Exception as e:  # For Debugging and Testing catch all Exceptions
             return f"DB Access failed: Exception {e}."
+
+
+def delete_object_from_db(object):
+    """Deletes the given object from db"""
+    try:
+        db.session.delete(object)
+        db.session.commit()
+        return f"{object.title} deleted."
+    except PendingRollbackError:
+        while db.session.registry().in_transaction():
+            db.session.rollback()
+        return "operation terminated due to a failed insert or update before,  \
+                waiting for an orderly rollback. Cleared transaction log of pending \
+                transactions"
+    except Exception as e:  # For Debugging and Testing catch all Exceptions
+        return f"DB Access failed: Exception {e}."
+
+
+def deactivate_status(entity):
+    """deactivates all status values"""
+    try:
+        configs = db.session.query(AIConfig).all()
+        for config in configs:
+            if config.status:
+                config.status = 0
+        db.session.commit()
+        return None
+    except PendingRollbackError:
+        while db.session.registry().in_transaction():
+            db.session.rollback()
+        return None
+    except Exception as e:  # For Debugging and Testing catch all Exceptions
+        return None
+
+
+def equal(src, trg):
+    """Lacking a solid method to compare db objects, I use this crook"""
+
+    equality = src.ai_model == trg.ai_model and \
+                src.ai_role == trg.ai_role and \
+                src.ai_temperature == trg.ai_temperature and \
+                src.ai_top_p == trg.ai_top_p and \
+                src.ai_top_k == trg.ai_top_k and \
+                src.ai_max_out == trg.ai_max_out
+    return equality
+
+def get_prompt_by_title(title):
+    try:
+        prompt = db.session.query(Prompt).filter(Prompt.title==title).first()
+        return prompt
+    except Exception as e:  # For Debugging and Testing catch all Exceptions
+        return None

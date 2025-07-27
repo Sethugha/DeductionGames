@@ -16,10 +16,11 @@
         <h2>{{ clue.clue_name }}</h2>
 
             <div class="flashcard-case">
-                <strong>{{ clue.clue_description }}:</strong><br>
+                <strong>{{ clue.clue_description }}:</strong><br><md-block>
                 {% if details %}
                  {{ details }}
                 {% endif %}
+                </md-block>
             </div>
             <div class="flashcard-case">
                 <form class="form-character" action="/search_indicators" method="POST" id="find_indicators" style="margin-bottom:32px; text-align:center;">

@@ -1,14 +1,15 @@
-from flask import Flask,render_template, request
-from data_models import db, Character, Case, Clue, Text, Solution
+from flask import Flask,render_template, request, redirect, url_for
+from data_models import db, Character, Case, Clue, Text, Solution, AIConfig, Conversation, Prompt
+import os
 from os import path
 import config
-#import utilities
 import storage
 from ai_request import AIRequest
+from utilities import EqualityMixin
 
 #store absolute path to database file
-DB_PATH=path.abspath(path.join(path.dirname(__file__), path.join('data', 'deduction_games_old.db')))
-
+DB_PATH=path.abspath(path.join(path.dirname(__file__), path.join('data', 'deduction_games.db')))
+TRANSLATION_TABLE = {8217: 180, 8220: 39, 8221: 39, 8212: 45, 233: 101}
 #create Flask instance
 app = Flask(__name__)
 #configure flask_SQLAlchemy
@@ -16,12 +17,15 @@ app.config.from_object('config.DevConfig')
 
 ai_client = AIRequest()
 
+
 @app.route('/')
 def home():
     """ Route to home page with Story-selection and stats."""
+
     cases = storage.retrieve_entity_from_db(Case)
     stories = storage.retrieve_entity_from_db(Text)
-    return render_template('home.html', stories=stories, cases=cases, message="")
+    aiconfig = storage.retrieve_aiconfig_by_status()
+    return render_template('home.html', stories=stories, cases=cases, aiconfig=aiconfig, message="")
 
 
 @app.route('/select_case', methods=['GET','POST'])
@@ -106,13 +110,15 @@ def generate_case():
     # ----------------------------------------------------------------------------------------------
     # Create new case from text.
     # ----------------------------------------------------------------------------------------------
-    new_case = ai_client.ai_request(text.content)
-    # Extract case title and introduction
     new_id = storage.find_highest_case_id()
-    case_title = new_case.get('case_title', 'Case'+str(new_id))
-    introduction = new_case.get('case_description', None)
+    new_case = ai_client.metamorphosis(text.content)
+    print(new_case)
+    # Extract case title and introduction
+
+    case_title = new_case.get('title', 'Case'+str(new_id))
+    introduction = new_case.get('introduction', None)
     solution = new_case.get('solution', None)
-    case = Case(title=case_title, description=introduction, status='open', source=text.id)
+    case = Case(title=case_title, introduction=introduction, status='open', source=text.id)
     storage.add_object_to_db_session(case)
     # ----------------------------------------------------------------------------------------------
     # Extract Characters and write into db
@@ -125,12 +131,15 @@ def generate_case():
     # Extract clues and write into db
     # ----------------------------------------------------------------------------------------------
     clue_list = new_case.get('clues', None)
+    print("hint-list")
     for hint in clue_list:
+        print(hint)
         clue = Clue(case_id=new_id,
-                    clue_name=hint['clue_name'],
-                    clue_description=hint['description'],
-                    clue_details=hint['details']
+                    clue_name=hint["clue_name"],
+                    clue_description=hint["clue_description"],
+                    clue_details=hint["clue_details"]
                    )
+
         storage.add_object_to_db_session(clue)
     # ----------------------------------------------------------------------------------------------
     # Extract solution and write into db, currently unused.
@@ -161,7 +170,9 @@ def add_text():
     elif request.method == 'POST':
         title = request.form.get('title')
         author= request.form.get('author')
-        content = request.form.get('content')
+        text = request.form.get('content')
+        content = text.translate(TRANSLATION_TABLE)
+        original_txt = len(content)
 
     if title and author and content:
         text = Text(title=title, author=author, content=content)
@@ -253,9 +264,74 @@ def search_indicators():
     search_str = request.form.get('indicators')
     if search_str:
         indicators = ai_client.search_indicators(text.content, search_str, clue)
-        print("New Indicators: ", indicators)
+        print("New Indicators: ", indicators) # debug
+        clue.clue_details += indicators
+        db.session.commit()
         return render_template('indicators.html', indicators=indicators, clue=clue)
     return render_template('indicators.html', clue=clue)
+
+
+@app.route('/config_ai', methods=['GET','POST'])
+def config_ai():
+    """reads active configuration from db and adjusts the genai-setup"""
+    if request.method =='POST':
+        ai_model = request.form.get('model')
+        ai_role = request.form.get('role')
+        ai_temperature = request.form.get('temp')
+        ai_top_p = request.form.get('top_p')
+        ai_top_k = request.form.get('top_k')
+        ai_max_out = request.form.get('max_out')
+        aiconfig = storage.retrieve_aiconfig_by_status()
+        new_config = AIConfig(status=1,
+                              ai_model=ai_model,
+                              ai_role=ai_role,
+                              ai_temperature=ai_temperature,
+                              ai_top_p=ai_top_p,
+                              ai_top_k=ai_top_k,
+                              ai_max_out=ai_max_out)
+        if not storage.equal(aiconfig, new_config):
+            storage.deactivate_status(AIConfig)
+            storage.add_object_to_db_session(new_config)
+        return render_template('home.html', stories=stories, cases=cases, aiconfig=aiconfig,
+                               message=message)
+
+
+        return redirect(url_for('home'))
+
+
+@app.route('/del_case', methods=['POST'])
+def del_case():
+    """deletes selected case from db"""
+
+    case_id = request.form.get('case_id')
+    if case_id:
+        case = storage.read_entity_by_id(Case, case_id)
+        characters = storage.read_characters_of_single_case(case.id)
+        clues = storage.read_clues_of_single_case(case_id)
+        solution = storage.read_entity_by_id(Solution, case.solution)
+        for character in characters:
+            storage.delete_object_from_db(character)
+        for clue in clues:
+            storage.delete_object_from_db(clue)
+        storage.delete_object_from_db(solution)
+        message = storage.delete_object_from_db(case)
+    cases = storage.retrieve_entity_from_db(Case)
+    stories = storage.retrieve_entity_from_db(Text)
+    aiconfig = storage.retrieve_aiconfig_by_status()
+    return render_template('home.html', stories=stories, cases=cases, aiconfig=aiconfig, message=message)
+
+
+@app.route('/del_text', methods=['POST'])
+def del_text():
+    """deletes selected text from db"""
+    text_id=request.form.get('text_id')
+    if text_id:
+        text = storage.read_entity_by_id(Text, text_id)
+        message=storage.delete_object_from_db(text)
+    cases = storage.retrieve_entity_from_db(Case)
+    stories = storage.retrieve_entity_from_db(Text)
+    aiconfig = storage.retrieve_aiconfig_by_status()
+    return render_template('home.html', stories=stories, cases=cases, aiconfig=aiconfig, message=message)
 
 
 if __name__ == "__main__":
@@ -263,7 +339,7 @@ if __name__ == "__main__":
     if DB_PATH:
         db.init_app(app)
         #with app.app_context():
-        #   db.create_all()
+        #    db.create_all()
         app.run(host="127.0.0.1", port=5002, debug=True)
     else:
         print("No database accessible. Aborting.")

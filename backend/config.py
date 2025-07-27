@@ -2,7 +2,7 @@ from os import path
 import platform
 
 basedir = path.abspath(path.dirname(__file__))
-DB_PATH=path.abspath(path.join(path.dirname(__file__), path.join('data', 'deduction_games_old.db')))
+DB_PATH=path.abspath(path.join(path.dirname(__file__), path.join('data', 'deduction_games.db')))
 ostype = platform.system
 
 

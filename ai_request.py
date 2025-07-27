@@ -4,29 +4,33 @@ ai_request.py - Interface to Google Gemini AI
 """
 import os
 import json
+from flask import jsonify
 from dotenv import load_dotenv
 import google.generativeai as genai
 from google.generativeai.types import GenerationConfig
+import storage
+from data_models import db, AIConfig, Conversation
 
 # Load environment vars
 load_dotenv()
 
 API_KEY = os.getenv("GEMINI_API_KEY")
-
+ai_config = storage.retrieve_aiconfig_by_status()
+AI_CONFIG_COUNT = ai_config.id
 
 # Configurate Google AI
 generation_config = GenerationConfig(
-    temperature=0.2,
-    top_p=1,
-    top_k=1,
-    max_output_tokens=2048,
+    temperature=ai_config.ai_temperature,
+    top_p=ai_config.ai_top_p,
+    top_k=ai_config.ai_top_k,
+    max_output_tokens=ai_config.ai_max_out
 )
 
 genai.configure(api_key=API_KEY)
 
-# List available models an pick the right one
+# List available models and pick the right one
 available_models = [m.name for m in genai.list_models()]
-#print("Available Models:", available_models)
+print("Available Models:", available_models)
 
 
 class AIRequest():
@@ -35,9 +39,9 @@ class AIRequest():
     """
     def __init__(self):
         try:
-            # use "models/gemini-2.0-flash"
+            # use model in "models/"
             self.model = genai.GenerativeModel(
-                "models/gemini-2.0-flash",
+                "models/"+str(ai_config.ai_model),
                 generation_config=generation_config
             )
             self.chat = self.model.start_chat()
@@ -47,36 +51,27 @@ class AIRequest():
             raise
 
     def metamorphosis(self, data_string):
-        """
-        Order the metamorphosis.
-        """
-        prompt = f"""
-                You are a script author ordered to create a script for a deduction game
-                out of the given crime story {data_string}.
-                Your complete knowledge about events, evidences and facts arises from the crime story itself.
-                You must not use any knowledge not included in the story.
-                You must not make own deductions.
-                
-                Create a json object as visible below:
-                'title': extracted story title or a telling case title.
-                'introduction': Short description of the crime case (about 5-7 sentences).
-                'characters': Extract the persons contained in {data_string} and deliver a list of dicts,
-                each containing the full name using key 'name' and the person´s role in the story using key'role'.
-                'clues': a list of dictionaries as described below:
-                Every item, occurrence or witness linked to the crime is to store into 
-                'clue_name': name.
-                'clue_description': A brief description of the clue and its possible connection o the crime.
-                'clue_details': A list containing 3 significant attributes pointing to the crime.
-                afterwards extend the clue list 
-                'solution': The perpetrator´s full name.
-                'method': The method how the crime was done matching the story as exactly as possible.
-                'evidences': A list of clue names which are pointing to the crime.
-                extent the clue list by 3-4 red herrings styled exactly like the real clues.       
-                
-                While creating the ip
-                """
-        response = self.model.generate_content(prompt)
+        """Order the metamorphosis text --> game."""
+        prompt = storage.get_prompt_by_title("metamorphosis")
+        role = prompt.role
+        case_id = storage.find_highest_case_id()
+        ai_query = 'f"""'+str(prompt.content)+'"""'
+        print(ai_query)
+        exit()
+        response = self.model.generate_content(ai_query)
+
         response_text = response.text.strip()
+        token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
+                       + str(response.usage_metadata.cached_content_token_count) + ", " \
+                       + str(response.usage_metadata.candidates_token_count) + ", " \
+                       + str(response.usage_metadata.total_token_count)
+
+        conversation = Conversation(case_id=case_id,
+                                    prompt_id=prompt.id,
+                                    free_text=response.text,
+                                    ai_config_id=AI_CONFIG_COUNT,
+                                    conv_metadata=token_counts)
+        storage.add_object_to_db_session(conversation)
         # Remove Markdown-Code-Block-Format
         response_text = response_text.replace('```json', '').replace('```', '').strip()
 
@@ -97,15 +92,27 @@ class AIRequest():
                 Every additional examination of a clue reveals up to 2 new details if these
                 are mentioned within {data_string}.
                 Create an answer in plain english as if it came from an observer
-                informing You afterwards about your findings. 
+                informing You about your findings. 
                 """
         response = self.model.generate_content(prompt)
         response_text = response.text.strip()
+        token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
+                          + str(response.usage_metadata.cached_content_token_count) + ", " \
+                          + str(response.usage_metadata.candidates_token_count) + ", "\
+                          + str(response.usage_metadata.total_token_count)
+
+        conversation = Conversation(case_id=clue.case_id,
+                                    prompt_id=2,
+                                    free_text=response_text,
+                                    ai_config_id=AI_CONFIG_COUNT,
+                                    conv_metadata=token_counts)
+        storage.add_object_to_db_session(conversation)
+
+
         # Remove Markdown-Code-Block-Format
         response_text = response_text.replace('```json', '').replace('```', '').strip()
-        #Validiere und verarbeite die Antwort
-        #result = json.loads(response_text)
         return (response_text)
+
 
     def ai_character_request(self, data_string, character):
         """
@@ -121,6 +128,18 @@ class AIRequest():
                 """
         response = self.model.generate_content(prompt)
         response_text = response.text.strip()
+        token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
+                       + str(response.usage_metadata.cached_content_token_count) + ", " \
+                       + str(response.usage_metadata.candidates_token_count) + ", " \
+                       + str(response.usage_metadata.total_token_count)
+
+        conversation = Conversation(case_id=character.case_id,
+                                    prompt_id=2,
+                                    free_text=response_text,
+                                    ai_config_id=AI_CONFIG_COUNT,
+                                    conv_metadata=token_counts)
+        storage.add_object_to_db_session(conversation)
+
         # Remove Markdown-Code-Block-Format
         response_text = response_text.replace('```json', '').replace('```', '').strip()
         # Validiere und verarbeite die Antwort
@@ -138,10 +157,22 @@ class AIRequest():
                 from the crime story {data_string}. Your complete knowledge is restricted
                 to events and facts described in this crime story.
                 You must not use any knowledge from outside or draw own conclusions.
-                Your task is to play the role authentical, not to "win" the interrogation.
+                Your task is to play the role authentically, not to "win" the interrogation.
                 """
         response = self.model.generate_content(prompt)
         response_text = response.text.strip()
+        token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
+                       + str(response.usage_metadata.cached_content_token_count) + ", " \
+                       + str(response.usage_metadata.candidates_token_count) + ", " \
+                       + str(response.usage_metadata.total_token_count)
+
+        conversation = Conversation(case_id=character.case_id,
+                                    prompt_id=2,
+                                    free_text=response_text,
+                                    ai_config_id=AI_CONFIG_COUNT,
+                                    conv_metadata=token_counts)
+        storage.add_object_to_db_session(conversation)
+
         # Remove Markdown-Code-Block-Format
         response_text = response_text.replace('```json', '').replace('```', '').strip()
         # Validiere und verarbeite die Antwort
@@ -161,11 +192,23 @@ class AIRequest():
                 confronted with the evidences {evidences}. Your complete knowledge is restricted
                 to events and facts described in this crime story.
                 You must not use any knowledge from outside or draw own conclusions.
-                Your task is to play the role authentical, not to "win" the interrogation.
+                Your task is to play the role authentically, not to "win" the interrogation.
                 If the evidences cover about 50% of the facts, break down and confess.
                 """
         response = self.model.generate_content(prompt)
         response_text = response.text.strip()
+        token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
+                       + str(response.usage_metadata.cached_content_token_count) + ", " \
+                       + str(response.usage_metadata.candidates_token_count) + ", " \
+                       + str(response.usage_metadata.total_token_count)
+
+        conversation = Conversation(case_id=character.case_id,
+                                    prompt_id=2,
+                                    free_text=response_text,
+                                    ai_config_id=AI_CONFIG_COUNT,
+                                    conv_metadata=token_counts)
+        storage.add_object_to_db_session(conversation)
+
         # Remove Markdown-Code-Block-Format
         response_text = response_text.replace('```json', '').replace('```', '').strip()
         # Validiere und verarbeite die Antwort
@@ -180,14 +223,38 @@ class AIRequest():
         prompt = f"""
                         You are the investigator, looking for indicators 
                         which could deliver additional information about {clue}.
-                        Details which are part of {data_string} and are 
-                        associated with {clue} should match the gist of {search_str} to be mentioned.
-                        If there is no match simply answer like:
-                        'Nothing special caught your eye'.  
-                        Answer in english.
+                        Details which are part of of the crime story {data_string} and  
+                        associated with {clue} and {search_str} are to reveal with restrictions 
+                        as visible below:
+                        Any item, trail, witness, location or fact mentioned in the crime story but not in {clue} 
+                        is an indicator.
+                        If there are no indicators give a subtle hint like: 'Nothing special caught your eye',
+                        or: 'The witness shrugs, he has no idea.'  
+                        Reveal 1-3 indicators of all indicators associated with {clue} and give a subtle hint to search 
+                        again if there are leftovers.
+                        Answer in plain english. To this answer append the string '#RV#' followed by a list of the revealed 
+                        indicators.     
                         """
+
         response = self.model.generate_content(prompt)
-        response_text = response.text.strip()
+        response_text = response.text.split('#RV#')[0].strip()
+        revealed_indicators = response.text.split('#RV#')[1]
+        if revealed_indicators:
+            clue.clue_details = clue.clue_details + ',' + revealed_indicators
+            db.session.commit()
+        token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
+                       + str(response.usage_metadata.cached_content_token_count) + ", " \
+                       + str(response.usage_metadata.candidates_token_count) + ", " \
+                       + str(response.usage_metadata.total_token_count)
+
+        conversation = Conversation(case_id=clue.case_id,
+                                    prompt_id=2,
+                                    free_text=response_text,
+                                    ai_config_id=AI_CONFIG_COUNT,
+                                    conv_metadata=token_counts)
+        storage.add_object_to_db_session(conversation)
+
         # Remove Markdown-Code-Block-Format
         response_text = response_text.replace('```json', '').replace('```', '').strip()
+
         return (response_text)
