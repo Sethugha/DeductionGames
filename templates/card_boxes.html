@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+<body>
+<header>
+    <h2> {{ case.title }}</h2>
+    {{ case.introduction }}
+    <br><br>
+    <h3>Currently involved characters and known Evidences</h3>
+</header>
+
+    <div class="main-content">
+        <div class="inner-content">
+            <h2>Characters</h2>
+            {% for character in characters %}
+                <form action="/view_character/{{ character.id }}" method="GET">
+                    <div class="flashcard">
+                        <strong>{{ character.name }}:</strong><small> {{ character.role }} </small>
+                        <input type="submit" value="View {{ character.name }}">
+                    </div>
+                </form>
+            {% endfor %}
+        </div>
+        <div class="inner-content">
+            <h2>Clues</h2>
+            {% for clue in clues %}
+                <form action="/view_hint/{{ clue.id }}" method="GET">
+                    <div class="flashcard">
+                        <strong>{{ clue.clue_name }}:</strong> {{ clue.clue_description }}<br>
+                        <small>{{ clue.clue_details }}</small>
+                        <input type="submit" value="View Clue {{ clue.clue_name }}">
+                    </div>
+
+                </form>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+    <footer class="universal">
+        <nav>
+          <a href="/">Home</a>
+        </nav>
+    </footer>
+</body>
+</html>

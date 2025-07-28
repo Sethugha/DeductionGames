@@ -1,0 +1,244 @@
+// ---------------------------------
+// Variables
+// ---------------------------------
+--font-stack: Tahoma, Geneva, Verdana, sans-serif;
+--primary-color: #4CAF50;
+--primary-color-dark: darken(var(--primary-color), 25%);
+--primary-color-bright: brighten(var(--primary-color), 25%);
+--bg-color: #f9f9f9;
+--card-bg: #f0f0f0;
+--card-hover-bg: #e8f5e9;
+--text-color: #333;
+--text-dark: darken(var(--text-color), 25%);
+--text-bright: brighten(var(--text-color), 25%);
+--border-color: #ddd;
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: var(--bg-color);
+}
+
+.no-cases {
+  color: #888;
+  font-style: italic;
+  margin: 10px 0 20px 0;
+}
+
+
+header {
+  text-align: center;
+  padding: 20px;
+  background: #fff;
+
+}
+
+.main-content {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-around;
+  padding: 40px 20px;
+
+
+}
+
+.inner-content {
+  text-align: center;
+  position: relative;
+  bottom: 40px;
+  flex: 0 0 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+
+.side-form {
+  position: relative;
+  bottom: 40px;
+  flex: 0 0 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    label {
+      font-weight: bold;
+      display: flex;
+      flex-direction: column;
+    }
+
+    input {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+
+      &:hover {
+        background-color: #3c9442;
+      }
+    }
+  }
+}
+
+.main-panel {
+  position: relative;
+
+  flex: 0 0 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+
+  h2 {
+    margin-bottom: 20px;
+  }
+
+  .selection-row {
+    width: 560px;
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 10px;
+
+    select {
+      width: 400px;
+      height: 160px;
+      padding: 10px;
+      gap: 10px;
+    }
+
+    .button-column {
+      justify-content: flex-end;
+      align-items: space-even;
+      display: flex;
+      flex-direction: column;
+      gap: 1%;
+      width: 160px;
+
+
+      button {
+        padding: 10px;
+        background-color: #0077cc;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+
+        &:hover {
+          background-color: #005fa3;
+        }
+      }
+    }
+  }
+}
+
+footer.universal {
+  text-align: center;
+  margin-top: 60px;
+  padding: 20px;
+  background-color: #eee;
+
+  nav a {
+
+    margin: 0 10px;
+    color: #444;
+    text-decoration: none;
+    font-weight: bold;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+ input[type="submit"] {
+    max-width: 400px;
+    margin-top: 16px;
+    padding: 10px 20px;
+    font-size: .9em;
+    border: none;
+    border-radius: 6px;
+    background-color: green;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: brighten(green, 20%);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+    }
+
+    &:active {
+      background-color: darken(green, 10%);
+      box-shadow: 0 0 0 rgba(0, 0, 0, 0.1);
+    }
+
+    &:disabled {
+      background-color: #c0c0c0;
+      cursor: not allowed;
+      pointer-events: none;
+    }
+
+  }
+
+
+
+.box {
+  margin-bottom: 20px;
+
+  h2, h3 {
+    text-align: center;
+    color: $primary-color;
+    margin-bottom: 16px;
+  }
+}
+
+.flashcard {
+  background-color: #fdfdfd;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 30px;
+  font-size: 1em;
+  line-height: 1.5;
+
+
+  strong {
+    display: block;
+    font-weight: 700;
+    color: var(--text-dark);
+  }
+  small {
+    display: block;
+    color: var(--text-color);
+    font-size: .9em;
+
+  }
+
+}
+.container-vert {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }

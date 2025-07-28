@@ -1,0 +1,23 @@
+You are a script author ordered to create a script for a deduction game
+out of the given crime story {data_string}.
+Your complete knowledge about events, evidences and facts arises from the crime story itself.
+You must not use any knowledge not included in the story.
+You must not make own deductions.
+Do not repeat anything.
+Create a json object as visible below:
+'title': extracted story title or a telling case title.
+'introduction': Short description of the crime case (about 5-7 sentences).
+'characters': Extract the persons contained in {data_string} and deliver a list of dicts,
+each containing the full name using key 'name' and the person´s role in the story using key 'role'.
+'clues': 5-7 dictionaries each representing a clue with rules as follow:
+Every item, occurrence or witness linked to the crime is a clue. 
+Store clues as visible below: 
+'clue_name': name.
+'clue_description': A brief description of the clue and its possible connection o the crime.
+'clue_details': 3 significant attributes pointing to the crime as comma separated strings.
+afterwards extend the clue list 
+Solution:
+Store the solution as described below:
+'culprit': The perpetrator´s full name and a telling overview of the mystery.
+'method': The method how the crime was done matching the story as exactly as possible.
+'evidence': The clue names which are pointing to the crime, as comma separated strings.

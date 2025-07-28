@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accusation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+<body>
+    <div class="main-content">
+
+      <div class="inner-content" style="flex: 0 0 1200px;">
+        <h2> {{ character.name }}:</h2>
+        {{ validation }}
+        {% if condition %}
+            <img src="../static/images/Winner.png" alt="{{ condition }}">
+            <p>
+                Congratulations for your tenacity digging in this mystery.
+                A stellar career lies at your feet.
+            </p>
+        {% else %}
+            <img src="../static/images/Looser.png">
+            <p>
+                That did not end well for you. Perhaps being an Investigator needs more
+                than a diploma from the comic discounter.
+            </p>
+        {% endif %}
+      </div>
+    </div>
+    <footer class="universal">
+        <nav>
+            <a href="/">Home</a>
+        </nav>
+    </footer>
+</body>
+</html>

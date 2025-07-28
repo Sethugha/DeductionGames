@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Character</title>
+    <style>
+    input[type="text"],
+        textarea {
+        width: 100%;
+        padding: 10px;
+        font-size: .9em;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+    }
+
+    textarea {
+      min-height: 160px;
+      resize: vertical;
+    }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+
+      <div class="inner-content" style="flex: 0 0 1200px;">
+        <h2>{{ character.name }}</h2>
+        <strong>{{ character.role }}:</strong><br>
+                {% if details %}
+                {{ details }}
+                {% endif %}
+
+            <div class="flashcard" style="margin-top: 40px;">
+                <form class="form-character" action="/accuse_character/{{ character.id }}" method="GET" id="accusation">
+                    <input type="text" value="{{ character.id }}" form="accusation" hidden>
+                    <input class="input-visible" type="submit" value="Accuse Character" form="accusation" style="margin-top: 20px;">
+                </form>
+                <span id="char_name"><h3>Ask {{ character.name }} about</h3></span>
+                <form class="form-character" action="/ask_character" method="POST" id="ask_character" style="margin-bottom:32px; text-align:center;">
+                    <div class="selection-row">
+                    <select name="pick_clue" id="pick_clue" >
+                        {% for clue in clues %}
+                            <option value="{{ clue.id }}">{{ clue.clue_name }}</option>
+                        {% endfor %}
+                    </select>
+                    </div>
+                    <label>Ask own question<br><input type="text" id="own_question" name="own_question"></label><br>
+                    <input class="input-hidden" type="text" id="char_id" name="char_id" value="{{ character.id }}" form="ask_character" hidden>
+                    <input class="input-visible" type="submit" value="Start Interrogation" id="interrogate" style="margin-top:10px;">
+                </form>
+            </div>
+            <div class="flashcard">
+                {% if interrogation %}
+            {{ interrogation }}
+            {% endif %}
+            </div>
+    <footer class="universal">
+        <nav>
+            <a href="/">Home</a>
+            <a href="/select_case">Back to Characters and Clues</a>
+        </nav>
+    </footer>
+
+</body>
+</html>

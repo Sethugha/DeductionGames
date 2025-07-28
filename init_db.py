@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 app.config.from_object('config.DevConfig')
 DB_PATH=path.abspath(path.join(path.dirname(__file__), path.join('data', 'deduction_games.db')))
-source_path=path.abspath(path.join(path.dirname(__file__), path.join('../Sources', 'basic_prompts')))
+source_path=path.abspath(path.join(path.dirname(__file__), path.join('Sources', 'basic_prompts')))
 
 if DB_PATH:
     db.init_app(app)

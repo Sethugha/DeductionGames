@@ -15,23 +15,24 @@ from data_models import db, AIConfig, Conversation
 load_dotenv()
 
 API_KEY = os.getenv("GEMINI_API_KEY")
-ai_config = storage.retrieve_aiconfig_by_status()
-AI_CONFIG_COUNT = ai_config.id
-
 # Configurate Google AI
-generation_config = GenerationConfig(
-    temperature=ai_config.ai_temperature,
-    top_p=ai_config.ai_top_p,
-    top_k=ai_config.ai_top_k,
-    max_output_tokens=ai_config.ai_max_out
-)
+with open('ai_config.json', 'r') as jf:
+    ai_config = json.load(jf)
+CURRENT_AI_CFG = ai_config['config_id']
+
+
 
 genai.configure(api_key=API_KEY)
 
 # List available models and pick the right one
-available_models = [m.name for m in genai.list_models()]
-print("Available Models:", available_models)
-
+#available_models = [m.name for m in genai.list_models()]
+#print("Available Models:", available_models)
+generation_config = GenerationConfig(
+    temperature=ai_config['ai_temperature'],
+    top_p=ai_config['ai_top_p'],
+    top_k=ai_config['ai_top_k'],
+    max_output_tokens=ai_config['ai_max_out']
+)
 
 class AIRequest():
     """
@@ -41,7 +42,7 @@ class AIRequest():
         try:
             # use model in "models/"
             self.model = genai.GenerativeModel(
-                "models/"+str(ai_config.ai_model),
+                ai_config['ai_model'],
                 generation_config=generation_config
             )
             self.chat = self.model.start_chat()
@@ -50,26 +51,44 @@ class AIRequest():
             print(f"Error initializing AI model: {str(e)}")
             raise
 
-    def metamorphosis(self, data_string):
+    def metamorphosis(self, data_string, case_id):
         """Order the metamorphosis text --> game."""
-        prompt = storage.get_prompt_by_title("metamorphosis")
-        role = prompt.role
-        case_id = storage.find_highest_case_id()
-        ai_query = 'f"""'+str(prompt.content)+'"""'
-        print(ai_query)
-        exit()
-        response = self.model.generate_content(ai_query)
+        prompt = f"""You are a script author ordered to create a script for a deduction game
+        out of the given crime story {data_string}.
+        Your complete knowledge about events, evidences and facts arises from the crime story itself.
+        You must not use any knowledge not included in the story.
+        You must not make own deductions.
+        Do not give explanations, only create a json object as visible below:
+        'title': extracted story title or a telling case title. 
+        'introduction': Short description of the crime case (about 5-7 sentences).
+        'characters': Extract the persons contained in {data_string} and deliver a list of dicts,
+        each containing the full name using key 'name' and the person´s role in the story using key 'role'.
+        'clues': Up to 7 dictionaries each representing a clue with rules as follow:
+        Every item, occurrence or witness linked to the crime is a clue. 
+        Store clues as visible below: 
+        'clue_name': name.
+        'clue_description': A brief description of the clue and its possible connection o the crime.
+        'clue_details': 3 significant attributes pointing to the crime as comma separated strings.
+        Solution:
+        Store the solution as dictionary with keys below:
+        'culprit': The perpetrator´s full name and a telling overview of the mystery.
+        'method': The method how the crime was done matching the story as exactly as possible.
+        'evidence': The clue names which are pointing to the crime, as comma separated strings.
+        """
+
+        response = self.model.generate_content(prompt)
 
         response_text = response.text.strip()
+        print(response.usage_metadata)
         token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
                        + str(response.usage_metadata.cached_content_token_count) + ", " \
                        + str(response.usage_metadata.candidates_token_count) + ", " \
                        + str(response.usage_metadata.total_token_count)
 
         conversation = Conversation(case_id=case_id,
-                                    prompt_id=prompt.id,
+                                    prompt_id=1,
                                     free_text=response.text,
-                                    ai_config_id=AI_CONFIG_COUNT,
+                                    ai_config_id=CURRENT_AI_CFG,
                                     conv_metadata=token_counts)
         storage.add_object_to_db_session(conversation)
         # Remove Markdown-Code-Block-Format
@@ -104,7 +123,7 @@ class AIRequest():
         conversation = Conversation(case_id=clue.case_id,
                                     prompt_id=2,
                                     free_text=response_text,
-                                    ai_config_id=AI_CONFIG_COUNT,
+                                    ai_config_id=CURRENT_AI_CFG,
                                     conv_metadata=token_counts)
         storage.add_object_to_db_session(conversation)
 
@@ -134,9 +153,9 @@ class AIRequest():
                        + str(response.usage_metadata.total_token_count)
 
         conversation = Conversation(case_id=character.case_id,
-                                    prompt_id=2,
+                                    prompt_id=3,
                                     free_text=response_text,
-                                    ai_config_id=AI_CONFIG_COUNT,
+                                    ai_config_id=CURRENT_AI_CFG,
                                     conv_metadata=token_counts)
         storage.add_object_to_db_session(conversation)
 
@@ -167,9 +186,9 @@ class AIRequest():
                        + str(response.usage_metadata.total_token_count)
 
         conversation = Conversation(case_id=character.case_id,
-                                    prompt_id=2,
+                                    prompt_id=4,
                                     free_text=response_text,
-                                    ai_config_id=AI_CONFIG_COUNT,
+                                    ai_config_id=CURRENT_AI_CFG,
                                     conv_metadata=token_counts)
         storage.add_object_to_db_session(conversation)
 
@@ -193,7 +212,11 @@ class AIRequest():
                 to events and facts described in this crime story.
                 You must not use any knowledge from outside or draw own conclusions.
                 Your task is to play the role authentically, not to "win" the interrogation.
-                If the evidences cover about 50% of the facts, break down and confess.
+                If the evidences cover about 50% of the facts, break down and confess, 
+                attach the string "##WON" to your answer.
+                If the evidences cover less than about 50% then laugh the investigator down, 
+                attach the string "##LOST" to your answer.
+            
                 """
         response = self.model.generate_content(prompt)
         response_text = response.text.strip()
@@ -203,9 +226,9 @@ class AIRequest():
                        + str(response.usage_metadata.total_token_count)
 
         conversation = Conversation(case_id=character.case_id,
-                                    prompt_id=2,
+                                    prompt_id=5,
                                     free_text=response_text,
-                                    ai_config_id=AI_CONFIG_COUNT,
+                                    ai_config_id=CURRENT_AI_CFG,
                                     conv_metadata=token_counts)
         storage.add_object_to_db_session(conversation)
 
@@ -248,9 +271,9 @@ class AIRequest():
                        + str(response.usage_metadata.total_token_count)
 
         conversation = Conversation(case_id=clue.case_id,
-                                    prompt_id=2,
+                                    prompt_id=6,
                                     free_text=response_text,
-                                    ai_config_id=AI_CONFIG_COUNT,
+                                    ai_config_id=CURRENT_AI_CFG,
                                     conv_metadata=token_counts)
         storage.add_object_to_db_session(conversation)
 

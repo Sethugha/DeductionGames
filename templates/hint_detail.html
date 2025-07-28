@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Case</title>
+    <style>
+        input[type="text"],
+        textarea {
+        width: 100%;
+        padding: 10px;
+        font-size: .9em;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+    }
+
+    textarea {
+      min-height: 160px;
+      resize: vertical;
+    }
+    </style>
+</head>
+<body>
+
+    <div class="main-content">
+
+
+        <div class="inner-content" style="flex: 0 0 1200px;">
+        <h2>{{ clue.clue_name }}</h2>
+        <strong>{{ clue.clue_description }}:</strong><br>
+                {% if details %}
+                 {{ details }}
+                {% endif %}
+
+            <div class="flashcard" style="margin-top: 40px;">
+                <form class="form-character" action="/search_indicators" method="POST" id="find_indicators" style="margin-bottom:32px; text-align:center;">
+                    <label >Look for indicators<br><input type="text" id="indicators" name="indicators"></label><br>
+                    <input type="text" id="clue_id" name="clue_id" value="{{ clue.id }}" form="find_indicators" hidden>
+                    <input type="submit" value="Search"  style="margin-top:10px;">
+                </form>
+            </div>
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+    <footer class="universal">
+        <nav>
+           <a href="/">Home</a>
+           <a href="/select_case">Back to Characters and Clues</a>
+        </nav>
+    </footer>
+
+</body>
+</html>

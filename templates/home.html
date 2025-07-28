@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
 </head>
-<body>
+<body onload="clearMark()">
   <header>
         <h1>Mystery Machine</h1>
          {% if message %}
@@ -19,14 +19,14 @@
         <!-- Left Side Panel -->
         <aside class="side-form">
              <form method="POST" action="/config_ai" id="config_ai">
-
-                <label>Model<input type="text" name="model" id="model" size="10" placeholder="{{ aiconfig.ai_model }}"></label>
-                <label>Role<input type="text" name="role" id="role" size="10" placeholder="{{ aiconfig.ai_role }}"></label>
-                <label>Random Factor<input type="text" name="temp" id="temp" size="10" placeholder="{{ aiconfig.ai_temperature }}"></label>
-                <label>Content Diversity<input type="text" name="top_p" id="top_p" size="5" placeholder="{{ aiconfig.ai_top_p }}"></label>
-                <label>Token/Step<input type="text" name="top_k" id="top_k" size="5" placeholder="{{ aiconfig.ai_top_k }}"></label>
-                <label>Max Token<input type="text" name="max_out" id="max_out" size="10" placeholder="{{ aiconfig.ai_max_out }}"></label>
-                <input type="submit" value="Set" class="input-visible" style="padding: 8px 12px;">
+                <input type="text" name="changed" id="changed" hidden>
+                <label>Model<input type="text" name="model" id="model" size="10" placeholder="{{ aiconfig.ai_model }}" onInput="setMark()"></label>
+                <label>Role<input type="text" name="role" id="role" size="10" placeholder="{{ aiconfig.ai_role }}" onInput="setMark()"></label>
+                <label>Random Factor<input type="text" name="temp" id="temp" size="10" placeholder="{{ aiconfig.ai_temperature }}" onInput="setMark()"></label>
+                <label>Content Diversity<input type="text" name="top_p" id="top_p" size="5" placeholder="{{ aiconfig.ai_top_p }}" onInput="setMark()"></label>
+                <label>Token/Step<input type="text" name="top_k" id="top_k" size="5" placeholder="{{ aiconfig.ai_top_k }}" onInput="setMark()"></label>
+                <label>Max Token<input type="text" name="max_out" id="max_out" size="10" placeholder="{{ aiconfig.ai_max_out }}" onInput="setMark()"></label>
+                <input type="submit" value="Set" class="input-visible" style="padding: 8px 12px;" id="set_config">
              </form>
         </aside>
 
@@ -85,21 +85,29 @@
                <a href="/">Home</a>
                <a href="/add_text">Add new Story</a>
             </nav>
-        </footer>
+            </footer>
         </section>
 
 
  </div>
 
 <script type='text/javascript'>
-function setCase() {
- var optionValue = document.getElementById("pick_case").value;
- document.getElementById("case_id").value = optionValue;
-}
-function setText() {
- var optionValue = document.getElementById("pick_text").value;
- document.getElementById("text_id").value = optionValue;
-}
+    function setCase() {
+     var optionValue = document.getElementById("pick_case").value;
+     document.getElementById("case_id").value = optionValue;
+    }
+    function setText() {
+     var optionValue = document.getElementById("pick_text").value;
+     document.getElementById("text_id").value = optionValue;
+    }
+    function setMark() {
+     document.getElementById("changed").value = 1;
+     document.getElementById("set_config").style.visibility = 'visible';
+    }
+    function clearMark() {
+     document.getElementById("changed").value = 0;
+     document.getElementById("set_config").style.visibility = 'hidden';
+    }
 </script>
 </body>
 

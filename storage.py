@@ -1,11 +1,8 @@
 import json
-import utilities
-import os.path
 from data_models import db, Clue, Text, Case, Character, Solution, Prompt, Conversation, AIConfig
 from sqlalchemy import func, and_
-from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError, PendingRollbackError
-import shutil
+
 
 
 def find_highest_case_id():
@@ -295,7 +292,7 @@ def change_case_status(id, status):
     if isinstance(id, str) and id.isdigit():
         id = int(id)
     if isinstance(id, int):
-        if status not in ['open', 'active', 'solved']:
+        if status not in ['open', 'active', 'closed']:
             status = 'open'
         try:
             case = db.session.query(Case).filter(Case.id == id).first()
@@ -384,17 +381,22 @@ def deactivate_status(entity):
     except Exception as e:  # For Debugging and Testing catch all Exceptions
         return None
 
+def json_dump_config(id):
+    """dumps active ai_config into json file"""
+    ai_config = db.session.query(AIConfig).filter(AIConfig.id==id).first()
+    aiconfig = {
+                'config_id': id,
+                'ai_model': ai_config.ai_model,
+                'ai_role': ai_config.ai_role,
+                'ai_temperature': ai_config.ai_temperature,
+                'ai_top_p': ai_config.ai_top_p,
+                'ai_top_k': ai_config.ai_top_k,
+                'ai_max_out': ai_config.ai_max_out
+                }
+    with open('ai_config.json', 'w') as jf:
+        json.dump(aiconfig, jf, indent=4)
+        return None
 
-def equal(src, trg):
-    """Lacking a solid method to compare db objects, I use this crook"""
-
-    equality = src.ai_model == trg.ai_model and \
-                src.ai_role == trg.ai_role and \
-                src.ai_temperature == trg.ai_temperature and \
-                src.ai_top_p == trg.ai_top_p and \
-                src.ai_top_k == trg.ai_top_k and \
-                src.ai_max_out == trg.ai_max_out
-    return equality
 
 def get_prompt_by_title(title):
     try:
@@ -402,3 +404,11 @@ def get_prompt_by_title(title):
         return prompt
     except Exception as e:  # For Debugging and Testing catch all Exceptions
         return None
+
+def main():
+    pass
+
+
+
+if __name__ == "__main__":
+                main()

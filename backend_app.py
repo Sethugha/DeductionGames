@@ -1,11 +1,10 @@
 from flask import Flask,render_template, request, redirect, url_for
-from data_models import db, Character, Case, Clue, Text, Solution, AIConfig, Conversation, Prompt
-import os
+from data_models import db, Character, Case, Clue, Text, Solution, AIConfig
+import json
 from os import path
-import config
 import storage
 from ai_request import AIRequest
-from utilities import EqualityMixin
+from storage import find_highest_object_id
 
 #store absolute path to database file
 DB_PATH=path.abspath(path.join(path.dirname(__file__), path.join('data', 'deduction_games.db')))
@@ -24,8 +23,8 @@ def home():
 
     cases = storage.retrieve_entity_from_db(Case)
     stories = storage.retrieve_entity_from_db(Text)
-    aiconfig = storage.retrieve_aiconfig_by_status()
-    return render_template('home.html', stories=stories, cases=cases, aiconfig=aiconfig, message="")
+    ai_config = storage.retrieve_aiconfig_by_status()
+    return render_template('home.html', stories=stories, cases=cases, aiconfig=ai_config, message="")
 
 
 @app.route('/select_case', methods=['GET','POST'])
@@ -37,6 +36,13 @@ def select_case():
     if request.method == 'POST':
         case_id = request.form.get('case_id')
         if case_id:
+            case = storage.read_entity_by_id(Case,case_id)
+            if case.status == 'closed':
+                cases = storage.retrieve_entity_from_db(Case)
+                stories = storage.retrieve_entity_from_db(Text)
+                ai_config = storage.retrieve_aiconfig_by_status()
+                return render_template('home.html', stories=stories, cases=cases,
+                                       aiconfig=ai_config, message="This case is already solved.")
             cases = storage.retrieve_entity_from_db(Case)
             for case in cases:
                 storage.change_case_status(case.id, 'open')
@@ -111,7 +117,7 @@ def generate_case():
     # Create new case from text.
     # ----------------------------------------------------------------------------------------------
     new_id = storage.find_highest_case_id()
-    new_case = ai_client.metamorphosis(text.content)
+    new_case = ai_client.metamorphosis(text.content, new_id)
     print(new_case)
     # Extract case title and introduction
 
@@ -246,10 +252,15 @@ def accuse_character(id):
         if evidences:
             solution = storage.retrieve_solution_by_case_id(case.id)
             ai_response = ai_client.ai_accusation(text.content, character, evidences, solution)
-            print("character: ", character) #debug
-            print("evidences: ", evidences)
-            print("solution: ", solution)
-            return render_template('accusation.html', character=character, evidences=evidences, validation=ai_response)
+            response = ai_response.split('##')[0]
+            condition = ai_response.split('##')[1]
+            if condition == 'LOST':
+                condition = None
+
+            case.status = 'closed'
+            db.session.commit()
+
+            return render_template('laudatio.html', character=character, validation=response, condition=condition)
     return render_template('accusation.html', character=character)
 
 
@@ -264,51 +275,55 @@ def search_indicators():
     search_str = request.form.get('indicators')
     if search_str:
         indicators = ai_client.search_indicators(text.content, search_str, clue)
-        print("New Indicators: ", indicators) # debug
+        #print("New Indicators: ", indicators) # debug
         clue.clue_details += indicators
         db.session.commit()
         return render_template('indicators.html', indicators=indicators, clue=clue)
     return render_template('indicators.html', clue=clue)
 
 
-@app.route('/config_ai', methods=['GET','POST'])
+@app.route('/config_ai', methods=['POST'])
 def config_ai():
     """reads active configuration from db and adjusts the genai-setup"""
-    if request.method =='POST':
-        ai_model = request.form.get('model')
-        ai_role = request.form.get('role')
-        ai_temperature = request.form.get('temp')
-        ai_top_p = request.form.get('top_p')
-        ai_top_k = request.form.get('top_k')
-        ai_max_out = request.form.get('max_out')
-        aiconfig = storage.retrieve_aiconfig_by_status()
+    new_id = find_highest_object_id(AIConfig)
+    cases = storage.retrieve_entity_from_db(Case)
+    stories = storage.retrieve_entity_from_db(Text)
+    ai_config = storage.retrieve_aiconfig_by_status()
+    changed = request.form.get('changed')
+    ai_model = request.form.get('model') or ai_config.ai_model
+    ai_role = request.form.get('role') or ai_config.ai_role
+    ai_temperature = request.form.get('temp') or ai_config.ai_temperature
+    ai_top_p = request.form.get('top_p') or ai_config.ai_top_p
+    ai_top_k = request.form.get('top_k') or ai_config.ai_top_k
+    ai_max_out = request.form.get('max_out') or ai_config.ai_max_out
+    if changed:
         new_config = AIConfig(status=1,
                               ai_model=ai_model,
                               ai_role=ai_role,
                               ai_temperature=ai_temperature,
                               ai_top_p=ai_top_p,
                               ai_top_k=ai_top_k,
-                              ai_max_out=ai_max_out)
-        if not storage.equal(aiconfig, new_config):
-            storage.deactivate_status(AIConfig)
-            storage.add_object_to_db_session(new_config)
-        return render_template('home.html', stories=stories, cases=cases, aiconfig=aiconfig,
-                               message=message)
-
-
-        return redirect(url_for('home'))
+                              ai_max_out=ai_max_out
+                             )
+        storage.deactivate_status(AIConfig)
+        storage.add_object_to_db_session(new_config)
+        storage.json_dump_config(new_id)
+        # reinit ai_client
+        ai_client = AIRequest()
+        message = f"AI reconfigured to profile {new_id}"
+    return render_template('home.html', stories=stories, cases=cases, aiconfig=new_config,
+                               message=message or "")
 
 
 @app.route('/del_case', methods=['POST'])
 def del_case():
     """deletes selected case from db"""
-
     case_id = request.form.get('case_id')
     if case_id:
         case = storage.read_entity_by_id(Case, case_id)
-        characters = storage.read_characters_of_single_case(case.id)
+        characters = storage.read_characters_of_single_case(case_id)
         clues = storage.read_clues_of_single_case(case_id)
-        solution = storage.read_entity_by_id(Solution, case.solution)
+        solution = storage.retrieve_solution_by_case_id(case_id)
         for character in characters:
             storage.delete_object_from_db(character)
         for clue in clues:
@@ -317,8 +332,8 @@ def del_case():
         message = storage.delete_object_from_db(case)
     cases = storage.retrieve_entity_from_db(Case)
     stories = storage.retrieve_entity_from_db(Text)
-    aiconfig = storage.retrieve_aiconfig_by_status()
-    return render_template('home.html', stories=stories, cases=cases, aiconfig=aiconfig, message=message)
+    ai_config = storage.retrieve_aiconfig_by_status()
+    return render_template('home.html', stories=stories, cases=cases, aiconfig=ai_config, message=message)
 
 
 @app.route('/del_text', methods=['POST'])
@@ -327,11 +342,11 @@ def del_text():
     text_id=request.form.get('text_id')
     if text_id:
         text = storage.read_entity_by_id(Text, text_id)
-        message=storage.delete_object_from_db(text)
+        message= storage.delete_object_from_db(text)
     cases = storage.retrieve_entity_from_db(Case)
     stories = storage.retrieve_entity_from_db(Text)
-    aiconfig = storage.retrieve_aiconfig_by_status()
-    return render_template('home.html', stories=stories, cases=cases, aiconfig=aiconfig, message=message)
+    ai_config = storage.retrieve_aiconfig_by_status()
+    return render_template('home.html', stories=stories, cases=cases, aiconfig=ai_config, message=message)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,9 @@
+{
+    "config_id": 5,
+    "ai_model": "gemini-2.0-flash",
+    "ai_role": "model",
+    "ai_temperature": 0.4,
+    "ai_top_p": 1,
+    "ai_top_k": 1,
+    "ai_max_out": 2048
+}
