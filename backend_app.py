@@ -1,6 +1,5 @@
 from flask import Flask,render_template, request, redirect, url_for
 from data_models import db, Character, Case, Clue, Text, Solution, AIConfig
-import json
 from os import path
 import storage
 from ai_request import AIRequest
@@ -118,9 +117,7 @@ def generate_case():
     # ----------------------------------------------------------------------------------------------
     new_id = storage.find_highest_case_id()
     new_case = ai_client.metamorphosis(text.content, new_id)
-    print(new_case)
     # Extract case title and introduction
-
     case_title = new_case.get('title', 'Case'+str(new_id))
     introduction = new_case.get('introduction', None)
     solution = new_case.get('solution', None)
@@ -348,6 +345,11 @@ def del_text():
     ai_config = storage.retrieve_aiconfig_by_status()
     return render_template('home.html', stories=stories, cases=cases, aiconfig=ai_config, message=message)
 
+
+@app.route('/analysis', methods=['POST'])
+def analysis():
+    """Brief comparison of ai-parameters and runtime."""
+    pass
 
 if __name__ == "__main__":
     """Check for database file and initialization of backend service"""

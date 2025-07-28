@@ -4,7 +4,7 @@ ai_request.py - Interface to Google Gemini AI
 """
 import os
 import json
-from flask import jsonify
+import time
 from dotenv import load_dotenv
 import google.generativeai as genai
 from google.generativeai.types import GenerationConfig
@@ -18,7 +18,7 @@ API_KEY = os.getenv("GEMINI_API_KEY")
 # Configurate Google AI
 with open('ai_config.json', 'r') as jf:
     ai_config = json.load(jf)
-CURRENT_AI_CFG = ai_config['config_id']
+ai_config['config_id']
 
 
 
@@ -75,8 +75,12 @@ class AIRequest():
         'method': The method how the crime was done matching the story as exactly as possible.
         'evidence': The clue names which are pointing to the crime, as comma separated strings.
         """
-
+        start = time.perf_counter()
         response = self.model.generate_content(prompt)
+        elapsed = time.perf_counter() - start
+        with open('ai_config.json', 'r') as jf:
+            ai_config = json.load(jf)
+        current_config = ai_config['config_id']
 
         response_text = response.text.strip()
         print(response.usage_metadata)
@@ -88,8 +92,10 @@ class AIRequest():
         conversation = Conversation(case_id=case_id,
                                     prompt_id=1,
                                     free_text=response.text,
-                                    ai_config_id=CURRENT_AI_CFG,
-                                    conv_metadata=token_counts)
+                                    ai_config_id=current_config,
+                                    conv_metadata=token_counts,
+                                    avg_time=elapsed)
+
         storage.add_object_to_db_session(conversation)
         # Remove Markdown-Code-Block-Format
         response_text = response_text.replace('```json', '').replace('```', '').strip()
@@ -113,7 +119,12 @@ class AIRequest():
                 Create an answer in plain english as if it came from an observer
                 informing You about your findings. 
                 """
+        start = time.perf_counter()
         response = self.model.generate_content(prompt)
+        elapsed = time.perf_counter() - start
+        with open('ai_config.json', 'r') as jf:
+            ai_config = json.load(jf)
+        current_config = ai_config['config_id']
         response_text = response.text.strip()
         token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
                           + str(response.usage_metadata.cached_content_token_count) + ", " \
@@ -123,8 +134,10 @@ class AIRequest():
         conversation = Conversation(case_id=clue.case_id,
                                     prompt_id=2,
                                     free_text=response_text,
-                                    ai_config_id=CURRENT_AI_CFG,
-                                    conv_metadata=token_counts)
+                                    ai_config_id=current_config,
+                                    conv_metadata=token_counts,
+                                    avg_time=elapsed)
+
         storage.add_object_to_db_session(conversation)
 
 
@@ -145,7 +158,12 @@ class AIRequest():
                 Answer directly without hedging the questions.
                 Your task is to play the role authentical, not to "win" the interrogation.
                 """
+        start = time.perf_counter()
         response = self.model.generate_content(prompt)
+        elapsed = time.perf_counter() - start
+        with open('ai_config.json', 'r') as jf:
+            ai_config = json.load(jf)
+        current_config = ai_config['config_id']
         response_text = response.text.strip()
         token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
                        + str(response.usage_metadata.cached_content_token_count) + ", " \
@@ -155,8 +173,9 @@ class AIRequest():
         conversation = Conversation(case_id=character.case_id,
                                     prompt_id=3,
                                     free_text=response_text,
-                                    ai_config_id=CURRENT_AI_CFG,
-                                    conv_metadata=token_counts)
+                                    ai_config_id=current_config,
+                                    conv_metadata=token_counts,
+                                    avg_time=elapsed)
         storage.add_object_to_db_session(conversation)
 
         # Remove Markdown-Code-Block-Format
@@ -178,7 +197,12 @@ class AIRequest():
                 You must not use any knowledge from outside or draw own conclusions.
                 Your task is to play the role authentically, not to "win" the interrogation.
                 """
+        start = time.perf_counter()
         response = self.model.generate_content(prompt)
+        elapsed = time.perf_counter() - start
+        with open('ai_config.json', 'r') as jf:
+            ai_config = json.load(jf)
+        current_config = ai_config['config_id']
         response_text = response.text.strip()
         token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
                        + str(response.usage_metadata.cached_content_token_count) + ", " \
@@ -188,8 +212,9 @@ class AIRequest():
         conversation = Conversation(case_id=character.case_id,
                                     prompt_id=4,
                                     free_text=response_text,
-                                    ai_config_id=CURRENT_AI_CFG,
-                                    conv_metadata=token_counts)
+                                    ai_config_id=current_config,
+                                    conv_metadata=token_counts,
+                                    avg_time=elapsed)
         storage.add_object_to_db_session(conversation)
 
         # Remove Markdown-Code-Block-Format
@@ -218,7 +243,12 @@ class AIRequest():
                 attach the string "##LOST" to your answer.
             
                 """
+        start = time.perf_counter()
         response = self.model.generate_content(prompt)
+        elapsed = time.perf_counter() - start
+        with open('ai_config.json', 'r') as jf:
+            ai_config = json.load(jf)
+        current_config = ai_config['config_id']
         response_text = response.text.strip()
         token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
                        + str(response.usage_metadata.cached_content_token_count) + ", " \
@@ -228,8 +258,9 @@ class AIRequest():
         conversation = Conversation(case_id=character.case_id,
                                     prompt_id=5,
                                     free_text=response_text,
-                                    ai_config_id=CURRENT_AI_CFG,
-                                    conv_metadata=token_counts)
+                                    ai_config_id=current_config,
+                                    conv_metadata=token_counts,
+                                    avg_time=elapsed)
         storage.add_object_to_db_session(conversation)
 
         # Remove Markdown-Code-Block-Format
@@ -258,9 +289,13 @@ class AIRequest():
                         Answer in plain english. To this answer append the string '#RV#' followed by a list of the revealed 
                         indicators.     
                         """
-
+        start = time.perf_counter()
         response = self.model.generate_content(prompt)
+        elapsed = time.perf_counter() - start
         response_text = response.text.split('#RV#')[0].strip()
+        with open('ai_config.json', 'r') as jf:
+            ai_config = json.load(jf)
+        current_config = ai_config['config_id']
         revealed_indicators = response.text.split('#RV#')[1]
         if revealed_indicators:
             clue.clue_details = clue.clue_details + ',' + revealed_indicators
@@ -273,8 +308,9 @@ class AIRequest():
         conversation = Conversation(case_id=clue.case_id,
                                     prompt_id=6,
                                     free_text=response_text,
-                                    ai_config_id=CURRENT_AI_CFG,
-                                    conv_metadata=token_counts)
+                                    ai_config_id=current_config,
+                                    conv_metadata=token_counts,
+                                    avg_time=elapsed)
         storage.add_object_to_db_session(conversation)
 
         # Remove Markdown-Code-Block-Format
