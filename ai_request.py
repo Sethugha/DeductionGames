@@ -18,7 +18,7 @@ API_KEY = os.getenv("GEMINI_API_KEY")
 # Configurate Google AI
 with open('ai_config.json', 'r') as jf:
     ai_config = json.load(jf)
-ai_config['config_id']
+CURRENT_AI_CONFIG = ai_config['config_id']
 
 
 
