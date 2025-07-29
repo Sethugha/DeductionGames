@@ -85,8 +85,8 @@ class AIRequest():
         tlist = str(response.candidates).split()
         pos = tlist.index('finish_reason:')
         if tlist[pos + 1] != 'STOP':
-            raise "Sorry, it seems the last request exceeded the toke limit."
-            return None
+            print(tlist[pos], tlist[pos + 1])
+            return "Sorry, it seems the last request exceeded the token limit."
         response_text = response.text.strip()
 
         token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
@@ -96,7 +96,7 @@ class AIRequest():
 
         conversation = Conversation(case_id=case_id,
                                     prompt_id=1,
-                                    free_text=response.text,
+                                    free_text=response_text,
                                     ai_config_id=current_config,
                                     conv_metadata=token_counts,
                                     avg_time=elapsed)
@@ -106,8 +106,11 @@ class AIRequest():
         # response_text = response_text.replace('```json', '').replace('```', '').strip()
 
         # Validiere und verarbeite die Antwort
-        result = json.loads(response_text)
-        return result
+        try:
+            result = json.loads(response_text)
+            return result
+        except Exception as e:
+            return "Sorry, something went wrong."
 
 
     def ai_hint_request(self, data_string, clue):

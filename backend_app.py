@@ -117,6 +117,12 @@ def generate_case():
     # ----------------------------------------------------------------------------------------------
     new_id = storage.find_highest_case_id()
     new_case = ai_client.metamorphosis(text.content, new_id)
+    if isinstance(new_case, str):
+        cases = storage.retrieve_entity_from_db(Case)
+        stories = storage.retrieve_entity_from_db(Text)
+        ai_config = storage.retrieve_aiconfig_by_status()
+        return render_template('home.html', stories=stories, cases=cases, aiconfig=ai_config,
+                               message=new_case)
     # Extract case title and introduction
     case_title = new_case.get('title', 'Case'+str(new_id))
     introduction = new_case.get('introduction', None)
