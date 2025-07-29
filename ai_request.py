@@ -82,17 +82,14 @@ class AIRequest():
         statistics = f"statistics/response_candidates{time.strftime("%Y%m%d-%H%M%S")}.log"
         with open(statistics,'w') as sf:
             sf.write(str(response.candidates))
-        tlist = str(response.candidates).split()
-        pos = tlist.index('finish_reason:')
-        if tlist[pos + 1] != 'STOP':
-            print(tlist[pos], tlist[pos + 1])
-            return "Sorry, it seems the last request exceeded the token limit."
+
         response_text = response.text.strip()
 
         token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
                        + str(response.usage_metadata.cached_content_token_count) + ", " \
                        + str(response.usage_metadata.candidates_token_count) + ", " \
                        + str(response.usage_metadata.total_token_count)
+
 
         conversation = Conversation(case_id=case_id,
                                     prompt_id=1,
@@ -103,8 +100,8 @@ class AIRequest():
 
         storage.add_object_to_db_session(conversation)
         # Remove Markdown-Code-Block-Format
-        # response_text = response_text.replace('```json', '').replace('```', '').strip()
-
+        response_text = response_text.replace('```json', '').replace('```', '').strip()
+        print(response_text)
         # Validiere und verarbeite die Antwort
         try:
             result = json.loads(response_text)
