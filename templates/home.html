@@ -73,8 +73,10 @@
                         <input type="text" id="case_id" name="case_id" hidden>
                     </form>
                     <input class="input-visible" type="submit" value="Delete Case" form="del_case" style="background-color: red;">
-                    <form action="/analysis" id="analysis" method="GET"></form>
-                    <input class="input-visible" type="submit" value="Analysis" form="analysis">
+                    <form action="/analysis" id="analysis" method="POST" >
+                        <input type="text" id="aux_id" name="aux_id" hidden></form>
+                    <input class="input-visible" type="submit" value="Analysis" form="analysis" style="background-color: grey;">
+
                 </div>
 
             {% else %}
@@ -96,6 +98,7 @@
     function setCase() {
      var optionValue = document.getElementById("pick_case").value;
      document.getElementById("case_id").value = optionValue;
+     document.getElementById("aux_id").value = optionValue;
     }
     function setText() {
      var optionValue = document.getElementById("pick_text").value;

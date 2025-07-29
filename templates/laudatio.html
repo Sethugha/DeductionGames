@@ -12,19 +12,14 @@
 
       <div class="inner-content" style="flex: 0 0 1200px;">
         <h2> {{ character.name }}:</h2><br>
-          <span> {{ validation }} </span>
+          <md-span> {{ validation }} </md-span>
         {% if condition %}
             <img src="../static/images/Winner.png" alt="{{ condition }}">
-            <p>
-                Congratulations for your tenacity digging in this mystery.
-                A stellar career lies at your feet.
-            </p>
+            <md-span> {{ remark }} </md-span>
+
         {% else %}
             <img src="../static/images/Looser.png">
-            <p>
-                That did not end well for you. Perhaps being an Investigator needs more
-                than a diploma from the comic discounter.
-            </p>
+            <md-span> {{ remark }} </md-span>
         {% endif %}
       </div>
     </div>

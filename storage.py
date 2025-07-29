@@ -405,6 +405,23 @@ def get_prompt_by_title(title):
     except Exception as e:  # For Debugging and Testing catch all Exceptions
         return None
 
-def append_response(response):
-    """converts the incoming ai_response to a dict, and appends
-    it to the already existing responses-file"""
+
+def gather_conversations(id):
+    """Gather conversations by case_id"""
+    if isinstance(id, str) and id.isdigit():
+        id = int(id)
+    if isinstance(id, int):
+        try:
+            data = db.session.query(Conversation) \
+                   .filter(Conversation.case_id==id).all()
+            return data
+        except Exception as e:  # For Debugging and Testing catch all Exceptions
+            return f"DB Access failed: Exception {e}."
+
+def gather_ai_configs():
+    """Gather ai configurations by prompt_id"""
+    try:
+        data = db.session.query(AIConfig).all()
+        return data
+    except Exception as e:  # For Debugging and Testing catch all Exceptions
+        return f"DB Access failed: Exception {e}."

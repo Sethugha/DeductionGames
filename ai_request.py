@@ -20,8 +20,6 @@ with open('ai_config.json', 'r') as jf:
     ai_config = json.load(jf)
 CURRENT_AI_CONFIG = ai_config['config_id']
 
-
-
 genai.configure(api_key=API_KEY)
 
 # List available models and pick the right one
@@ -105,7 +103,7 @@ class AIRequest():
 
         storage.add_object_to_db_session(conversation)
         # Remove Markdown-Code-Block-Format
-        response_text = response_text.replace('```json', '').replace('```', '').strip()
+        # response_text = response_text.replace('```json', '').replace('```', '').strip()
 
         # Validiere und verarbeite die Antwort
         result = json.loads(response_text)
@@ -244,6 +242,7 @@ class AIRequest():
         """
         Accusing a suspect you present the evidences you found.
         The culprit will give up.
+        few-shot prompt
         """
         prompt = f"""
                 You are an actor playing the character {character.name} 
@@ -290,6 +289,7 @@ class AIRequest():
     def search_indicators(self, data_string, search_str, clue):
         """
         Look for additional indicators at a crime scene.
+        Few-shot prompt
         """
         prompt = f"""
                         You are the investigator, looking for indicators 
@@ -339,13 +339,10 @@ class AIRequest():
         return response_text
 
 
-    def sarcasm(self, character):
-        """A caustic remark for clueless investigators"""
-        prompt = f"""You are an actor playing the character {character} 
-                     who has just been accused of a crime. Either you are innocent or the 
-                     evidences were not sufficient.
-                     Give a pretty caustic remark regarding the investigator´s 
-                     qualities"""
+    def sarcasm(self, case_id):
+        """A caustic remark for clueless investigators, zero-shot prompt."""
+        prompt = f"""Create a pretty caustic remark regarding the investigator´s 
+                     qualities an innocent person would give if erroneously accused of a crime"""
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -360,9 +357,9 @@ class AIRequest():
                        + str(response.usage_metadata.candidates_token_count) + ", " \
                        + str(response.usage_metadata.total_token_count)
 
-        conversation = Conversation(case_id=clue.case_id,
+        conversation = Conversation(case_id=case_id,
                                     prompt_id=7,
-                                    free_text=response_text,
+                                    free_text=response.text,
                                     ai_config_id=current_config,
                                     conv_metadata=token_counts,
                                     avg_time=elapsed)
@@ -371,12 +368,9 @@ class AIRequest():
         return response.text
 
 
-    def compliment(self, character):
-        """A whiney remark from self-pitying culprits"""
-        prompt = f"""You are an actor playing the character {character} 
-                     who has just been accused of a crime and broke down, confessing it.
-                     Give a remark regarding the investigator´s qualities and some self-pity
-                     appropriate to {character}"""
+    def compliment(self, case_id):
+        """A whiney remark from self-pitying culprits, zero-shot prompt."""
+        prompt = f"""Create a whiney remark, a convicted criminal would give the investigator."""
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -391,9 +385,9 @@ class AIRequest():
                        + str(response.usage_metadata.candidates_token_count) + ", " \
                        + str(response.usage_metadata.total_token_count)
 
-        conversation = Conversation(case_id=clue.case_id,
+        conversation = Conversation(case_id=case_id,
                                     prompt_id=8,
-                                    free_text=response_text,
+                                    free_text=response.text,
                                     ai_config_id=current_config,
                                     conv_metadata=token_counts,
                                     avg_time=elapsed)

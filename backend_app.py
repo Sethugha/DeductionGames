@@ -1,5 +1,5 @@
 from flask import Flask,render_template, request, redirect, url_for
-from data_models import db, Character, Case, Clue, Text, Solution, AIConfig
+from data_models import db, Character, Case, Clue, Text, Solution, AIConfig, Conversation
 from os import path
 import storage
 from ai_request import AIRequest
@@ -253,11 +253,13 @@ def accuse_character(id):
             condition = ai_response.split('##')[1]
             if condition == 'LOST':
                 condition = None
-
+                remark = ai_client.sarcasm(case.id)
+            else:
+                remark = ai_client.compliment(case.id)
             case.status = 'closed'
             db.session.commit()
 
-            return render_template('laudatio.html', character=character, validation=response, condition=condition)
+            return render_template('laudatio.html', character=character, validation=response, condition=condition, remark=remark)
     return render_template('accusation.html', character=character)
 
 
@@ -349,7 +351,20 @@ def del_text():
 @app.route('/analysis', methods=['POST'])
 def analysis():
     """Brief comparison of ai-parameters and runtime."""
-    pass
+    case_id = request.form.get('aux_id')
+    if case_id:
+        conversations = storage.gather_conversations(case_id)
+        con_configs = storage.gather_ai_configs()
+        for record in conversations:
+            for config in con_configs:
+
+                if record.ai_config_id == config.id:
+                    print(record.prompt_id, record.ai_config_id, list[record.conv_metadata],
+                    config.ai_temperature, config.ai_top_p, config.ai_top_k,
+                    config.ai_max_out, record.avg_time,'s')
+
+    return redirect(url_for('home'))
+
 
 if __name__ == "__main__":
     """Check for database file and initialization of backend service"""
