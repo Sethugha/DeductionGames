@@ -4,54 +4,48 @@
     <meta charset="UTF-8">
     <title>Case Details</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script type="module" src="https://md-block.verou.me/md-block.js"></script>
 </head>
 <body>
-
-
-    <div class="container" style="display:block; max-width:800px; margin:auto;">
-        <h2>Case Details</h2>
-        <div style="margin-bottom:10px; text-alignment: center;">
-            <b>{{ case.title if case.title else 'Case No. ' ~ case.id }}</b>
-
-        </div>
-        <div class="story-box" style="background:#fff; border:1px solid #ccc; padding:24px; margin-bottom:20px; white-space:pre-line; font-family:serif; font-size:1.1em; line-height:1.6; box-shadow:0 2px 8px #eee; width:100%;">
-            {{ case.introduction }}
-        </div>
-        <div style="width:100%;">
-            <div class="box" style="margin-bottom:20px; width:100%;">
-                <h3>Characters</h3>
+    <header>
+       <h2> {{ case.title }}</h2>
+        <md-span> {{ case.introduction }} </md-span>
+    <br><br>
+  </header>
+    <main class="main-content">
+        <div class="inner-content">
+            <h3>Characters</h3>
                 {% if characters %}
-                    <ul style="padding-left: 1em;">
-                    {% for character in characters %}
-                        <li><strong>{{ character.name }}</strong> <span style="color: #888;">({{ character.role }})</span></li>
-                    {% endfor %}
+                    <ul style="padding-left: 1em;text-align: left;">
+                        {% for character in characters %}
+                            <li><strong>{{ character.name }}</strong> <md-span style="color: #888;"> ({{ character.role }}) </md-span></li>
+                        {% endfor %}
                     </ul>
                 {% else %}
-                    <div class="flashcard">No Characters recognized.</div>
+                  <div class="flashcard">No Characters recognized.</div>
                 {% endif %}
-            </div>
-            <div class="box" style="margin-bottom:20px; width:100%;">
-                <h3>Hints and Clues</h3>
-                {% if clues %}
-                    <ul style="padding-left: 1em;">
-                    {% for clue in clues %}
-                        <li><strong>{{ clue.clue_name }}</strong><br><span style="color: #888;">{{ clue.description }}</span></li>
-                    {% endfor %}
-                    </ul>
-                {% else %}
-                    <div class="flashcard">No Clues recognized.</div>
-                {% endif %}
-            </div>
         </div>
+        <div class="inner-content">
+            <h3>Hints and Clues</h3>
+            {% if clues %}
+                <ul style="padding-left: 1em;text-align: left;">
+                    {% for clue in clues %}
+                        <li><strong>{{ clue.clue_name }}</strong><br><md-span style="color: #888;"> {{ clue.description }} </md-span></li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="flashcard">No Clues recognized.</div>
+            {% endif %}
+        </div>
+    </main>
+    <footer class="universal">
         <form action="/" method="get" style="margin-top:20px;">
-            <button type="submit">Zurück zur Übersicht</button>
+            <button type="submit">Back to Overview</button>
         </form>
-    </div>
-
-    <nav class="universal">
-        <a href="/">Home</a>
-        <a href="/add_text">Add new Story</a>
-    </nav>
-
+        <nav>
+            <a href="/">Home</a>
+            <a href="/add_text">Add new Story</a>
+        </nav>
+    </footer>
 </body>
 </html>

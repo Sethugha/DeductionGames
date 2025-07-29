@@ -405,10 +405,6 @@ def get_prompt_by_title(title):
     except Exception as e:  # For Debugging and Testing catch all Exceptions
         return None
 
-def main():
-    pass
-
-
-
-if __name__ == "__main__":
-                main()
+def append_response(response):
+    """converts the incoming ai_response to a dict, and appends
+    it to the already existing responses-file"""

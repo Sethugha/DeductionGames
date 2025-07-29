@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Mystery Machine</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script type="module" src="https://md-block.verou.me/md-block.js"></script>
 
 </head>
 <body onload="clearMark()">
@@ -49,7 +50,7 @@
                     <form action="/del_text" id="del_text" method="POST">
                         <input type="text" id="text_id" name="text_id" hidden>
                     </form>
-                    <input class="input-visible" type="submit" value="Delete Text" form="del_text" Sstyle="background-color: red;">
+                    <input class="input-visible" type="submit" value="Delete Text" form="del_text" style="background-color: red;">
                 </div>
 
             {% else %}

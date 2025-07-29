@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accusation</title>
+    <script type="module" src="https://md-block.verou.me/md-block.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
+    <title>Accusation</title>
 </head>
 <body>
     <div class="main-content">
 
       <div class="inner-content" style="flex: 0 0 1200px;">
-        <h2> {{ character.name }}:</h2>
-        {{ validation }}
+        <h2> {{ character.name }}:</h2><br>
+          <span> {{ validation }} </span>
         {% if condition %}
             <img src="../static/images/Winner.png" alt="{{ condition }}">
             <p>

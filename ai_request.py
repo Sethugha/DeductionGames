@@ -81,9 +81,16 @@ class AIRequest():
         with open('ai_config.json', 'r') as jf:
             ai_config = json.load(jf)
         current_config = ai_config['config_id']
-
+        statistics = f"statistics/response_candidates{time.strftime("%Y%m%d-%H%M%S")}.log"
+        with open(statistics,'w') as sf:
+            sf.write(str(response.candidates))
+        tlist = str(response.candidates).split()
+        pos = tlist.index('finish_reason:')
+        if tlist[pos + 1] != 'STOP':
+            raise "Sorry, it seems the last request exceeded the toke limit."
+            return None
         response_text = response.text.strip()
-        print(response.usage_metadata)
+
         token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
                        + str(response.usage_metadata.cached_content_token_count) + ", " \
                        + str(response.usage_metadata.candidates_token_count) + ", " \
@@ -102,7 +109,7 @@ class AIRequest():
 
         # Validiere und verarbeite die Antwort
         result = json.loads(response_text)
-        return (result)
+        return result
 
 
     def ai_hint_request(self, data_string, clue):
@@ -111,13 +118,14 @@ class AIRequest():
         """
         prompt = f"""
                 You are the investigator in the field. You have studied the known facts
-                they gave you but you examine the crime site hoping to find
-                additional details of {clue}.
+                {clue} but you examine the crime site hoping to find
+                additional details.
                 You must not leave the story frame.
+                You must not use any deductions already mentioned in the story.
                 Every additional examination of a clue reveals up to 2 new details if these
-                are mentioned within {data_string}.
+                are mentioned within {data_string} but not in {clue}.
                 Create an answer in plain english as if it came from an observer
-                informing You about your findings. 
+                reporting your findings. 
                 """
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
@@ -125,6 +133,9 @@ class AIRequest():
         with open('ai_config.json', 'r') as jf:
             ai_config = json.load(jf)
         current_config = ai_config['config_id']
+        statistics = f"statistics/response_candidates{time.strftime("%Y%m%d-%H%M%S")}.log"
+        with open(statistics, 'w') as sf:
+            sf.write(str(response.candidates))
         response_text = response.text.strip()
         token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
                           + str(response.usage_metadata.cached_content_token_count) + ", " \
@@ -142,8 +153,8 @@ class AIRequest():
 
 
         # Remove Markdown-Code-Block-Format
-        response_text = response_text.replace('```json', '').replace('```', '').strip()
-        return (response_text)
+        # response_text = response_text.replace('```json', '').replace('```', '').strip()
+        return response_text
 
 
     def ai_character_request(self, data_string, character):
@@ -164,6 +175,9 @@ class AIRequest():
         with open('ai_config.json', 'r') as jf:
             ai_config = json.load(jf)
         current_config = ai_config['config_id']
+        statistics = f"statistics/response_candidates{time.strftime("%Y%m%d-%H%M%S")}.log"
+        with open(statistics, 'w') as sf:
+            sf.write(str(response.candidates))
         response_text = response.text.strip()
         token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
                        + str(response.usage_metadata.cached_content_token_count) + ", " \
@@ -179,11 +193,10 @@ class AIRequest():
         storage.add_object_to_db_session(conversation)
 
         # Remove Markdown-Code-Block-Format
-        response_text = response_text.replace('```json', '').replace('```', '').strip()
-        # Validiere und verarbeite die Antwort
+        # response_text = response_text.replace('```json', '').replace('```', '').strip()
         # result = json.loads(response_text)
 
-        return (response_text)
+        return response_text
 
 
     def ai_interrogation(self, data_string, character, clue, solution):
@@ -203,6 +216,9 @@ class AIRequest():
         with open('ai_config.json', 'r') as jf:
             ai_config = json.load(jf)
         current_config = ai_config['config_id']
+        statistics = f"statistics/response_candidates{time.strftime("%Y%m%d-%H%M%S")}.log"
+        with open(statistics, 'w') as sf:
+            sf.write(str(response.candidates))
         response_text = response.text.strip()
         token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
                        + str(response.usage_metadata.cached_content_token_count) + ", " \
@@ -218,11 +234,10 @@ class AIRequest():
         storage.add_object_to_db_session(conversation)
 
         # Remove Markdown-Code-Block-Format
-        response_text = response_text.replace('```json', '').replace('```', '').strip()
-        # Validiere und verarbeite die Antwort
+        # response_text = response_text.replace('```json', '').replace('```', '').strip()
         # result = json.loads(response_text)
 
-        return (response_text)
+        return response_text
 
 
     def ai_accusation(self, data_string, character, evidences, solution):
@@ -249,6 +264,9 @@ class AIRequest():
         with open('ai_config.json', 'r') as jf:
             ai_config = json.load(jf)
         current_config = ai_config['config_id']
+        statistics = f"statistics/response_candidates{time.strftime("%Y%m%d-%H%M%S")}.log"
+        with open(statistics, 'w') as sf:
+            sf.write(str(response.candidates))
         response_text = response.text.strip()
         token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
                        + str(response.usage_metadata.cached_content_token_count) + ", " \
@@ -264,10 +282,9 @@ class AIRequest():
         storage.add_object_to_db_session(conversation)
 
         # Remove Markdown-Code-Block-Format
-        response_text = response_text.replace('```json', '').replace('```', '').strip()
-        # Validiere und verarbeite die Antwort
+        # response_text = response_text.replace('```json', '').replace('```', '').strip()
         # result = json.loads(response_text)
-        return (response_text)
+        return response_text
 
 
     def search_indicators(self, data_string, search_str, clue):
@@ -296,6 +313,9 @@ class AIRequest():
         with open('ai_config.json', 'r') as jf:
             ai_config = json.load(jf)
         current_config = ai_config['config_id']
+        statistics = f"statistics/response_candidates{time.strftime("%Y%m%d-%H%M%S")}.log"
+        with open(statistics, 'w') as sf:
+            sf.write(str(response.candidates))
         revealed_indicators = response.text.split('#RV#')[1]
         if revealed_indicators:
             clue.clue_details = clue.clue_details + ',' + revealed_indicators
@@ -314,6 +334,69 @@ class AIRequest():
         storage.add_object_to_db_session(conversation)
 
         # Remove Markdown-Code-Block-Format
-        response_text = response_text.replace('```json', '').replace('```', '').strip()
+        # response_text = response_text.replace('```json', '').replace('```', '').strip()
 
-        return (response_text)
+        return response_text
+
+
+    def sarcasm(self, character):
+        """A caustic remark for clueless investigators"""
+        prompt = f"""You are an actor playing the character {character} 
+                     who has just been accused of a crime. Either you are innocent or the 
+                     evidences were not sufficient.
+                     Give a pretty caustic remark regarding the investigator´s 
+                     qualities"""
+        start = time.perf_counter()
+        response = self.model.generate_content(prompt)
+        elapsed = time.perf_counter() - start
+        with open('ai_config.json', 'r') as jf:
+            ai_config = json.load(jf)
+        current_config = ai_config['config_id']
+        statistics = f"statistics/response_candidates{time.strftime("%Y%m%d-%H%M%S")}.log"
+        with open(statistics, 'w') as sf:
+            sf.write(str(response.candidates))
+        token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
+                       + str(response.usage_metadata.cached_content_token_count) + ", " \
+                       + str(response.usage_metadata.candidates_token_count) + ", " \
+                       + str(response.usage_metadata.total_token_count)
+
+        conversation = Conversation(case_id=clue.case_id,
+                                    prompt_id=7,
+                                    free_text=response_text,
+                                    ai_config_id=current_config,
+                                    conv_metadata=token_counts,
+                                    avg_time=elapsed)
+        storage.add_object_to_db_session(conversation)
+        #response_text = response_text.replace('```json', '').replace('```', '').strip()
+        return response.text
+
+
+    def compliment(self, character):
+        """A whiney remark from self-pitying culprits"""
+        prompt = f"""You are an actor playing the character {character} 
+                     who has just been accused of a crime and broke down, confessing it.
+                     Give a remark regarding the investigator´s qualities and some self-pity
+                     appropriate to {character}"""
+        start = time.perf_counter()
+        response = self.model.generate_content(prompt)
+        elapsed = time.perf_counter() - start
+        with open('ai_config.json', 'r') as jf:
+            ai_config = json.load(jf)
+        current_config = ai_config['config_id']
+        statistics = f"statistics/response_candidates{time.strftime("%Y%m%d-%H%M%S")}.log"
+        with open(statistics, 'w') as sf:
+            sf.write(str(response.candidates))
+        token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
+                       + str(response.usage_metadata.cached_content_token_count) + ", " \
+                       + str(response.usage_metadata.candidates_token_count) + ", " \
+                       + str(response.usage_metadata.total_token_count)
+
+        conversation = Conversation(case_id=clue.case_id,
+                                    prompt_id=8,
+                                    free_text=response_text,
+                                    ai_config_id=current_config,
+                                    conv_metadata=token_counts,
+                                    avg_time=elapsed)
+        storage.add_object_to_db_session(conversation)
+        # response_text = response_text.replace('```json', '').replace('```', '').strip()
+        return response.text

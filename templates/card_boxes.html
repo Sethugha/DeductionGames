@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Case</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script type="module" src="https://md-block.verou.me/md-block.js"></script>
 
 </head>
 <body>
 <header>
     <h2> {{ case.title }}</h2>
-    {{ case.introduction }}
+    <md-span> {{ case.introduction }} </md-span>
     <br><br>
     <h3>Currently involved characters and known Evidences</h3>
 </header>
@@ -33,7 +34,7 @@
                 <form action="/view_hint/{{ clue.id }}" method="GET">
                     <div class="flashcard">
                         <strong>{{ clue.clue_name }}:</strong> {{ clue.clue_description }}<br>
-                        <small>{{ clue.clue_details }}</small>
+                        <small><md-span> {{ clue.clue_details }} </md-span></small>
                         <input type="submit" value="View Clue {{ clue.clue_name }}">
                     </div>
 

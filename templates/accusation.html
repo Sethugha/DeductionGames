@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accusation</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script type="module" src="https://md-block.verou.me/md-block.js"></script>
+    <title>Accusation</title>
+
     <style>
         .container-vert {
             max-width: 600px;
@@ -97,7 +99,7 @@
             <input class="input-visible" type="submit" value="Accuse">
         </form>
         <div class="flashcard">
-            {{ validation }}
+           <md-span> {{ validation }} </md-span>
         </div>
     </div>
     <nav class="universal">
