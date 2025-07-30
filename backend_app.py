@@ -2,6 +2,7 @@ from flask import Flask,render_template, request, redirect, url_for
 from data_models import db, Character, Case, Clue, Text, Solution, AIConfig, Conversation
 from os import path
 import storage
+import time
 from ai_request import AIRequest
 from storage import find_highest_object_id
 
@@ -301,6 +302,8 @@ def config_ai():
     ai_top_p = request.form.get('top_p') or ai_config.ai_top_p
     ai_top_k = request.form.get('top_k') or ai_config.ai_top_k
     ai_max_out = request.form.get('max_out') or ai_config.ai_max_out
+    zero = request.form.get('zero_checked')
+
     if changed:
         new_config = AIConfig(status=1,
                               ai_model=ai_model,
@@ -361,13 +364,23 @@ def analysis():
     if case_id:
         conversations = storage.gather_conversations(case_id)
         con_configs = storage.gather_ai_configs()
-        for record in conversations:
-            for config in con_configs:
-
-                if record.ai_config_id == config.id:
-                    print(record.prompt_id, record.ai_config_id, list[record.conv_metadata],
-                    config.ai_temperature, config.ai_top_p, config.ai_top_k,
-                    config.ai_max_out, record.avg_time,'s')
+        if conversations and con_configs:
+            analysis = f"statistics/conversations{time.strftime("%Y%m%d-%H%M%S")}.txt"
+            with (open(analysis, 'w') as sf):
+                for record in conversations:
+                    for config in con_configs:
+                        if config:
+                            if record.ai_config_id == config.id:
+                                analist = [str(record.prompt_id),
+                                           str(record.ai_config_id),
+                                           str(record.conv_metadata),
+                                           str(config.ai_temperature),
+                                           str(config.ai_top_p),
+                                           str(config.ai_top_k),
+                                           str(config.ai_max_out),
+                                           str(record.avg_time)
+                                          ]
+                                sf.write(f"{analist}\n")
 
     return redirect(url_for('home'))
 

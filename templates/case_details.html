@@ -7,45 +7,49 @@
     <script type="module" src="https://md-block.verou.me/md-block.js"></script>
 </head>
 <body>
-    <header>
-       <h2> {{ case.title }}</h2>
-        <md-span> {{ case.introduction }} </md-span>
-    <br><br>
-  </header>
-    <main class="main-content">
-        <div class="inner-content">
-            <h3>Characters</h3>
-                {% if characters %}
+<div class="outer-ridge">
+    <div class="inner-ridge">
+        <header>
+            <h2> {{ case.title }}</h2>
+            <md-span> {{ case.introduction }} </md-span>
+            <br><br>
+        </header>
+        <main class="main-content">
+            <div class="inner-content">
+                <h3>Characters</h3>
+                    {% if characters %}
+                        <ul style="padding-left: 1em;text-align: left;">
+                            {% for character in characters %}
+                                <li><strong>{{ character.name }}</strong> <md-span style="color: #888;"> ({{ character.role }}) </md-span></li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="flashcard">No Characters recognized.</div>
+                    {% endif %}
+            </div>
+            <div class="inner-content">
+                <h3>Hints and Clues</h3>
+                {% if clues %}
                     <ul style="padding-left: 1em;text-align: left;">
-                        {% for character in characters %}
-                            <li><strong>{{ character.name }}</strong> <md-span style="color: #888;"> ({{ character.role }}) </md-span></li>
+                        {% for clue in clues %}
+                            <li><strong>{{ clue.clue_name }}</strong><br><md-span style="color: #888;"> {{ clue.description }} </md-span></li>
                         {% endfor %}
                     </ul>
                 {% else %}
-                  <div class="flashcard">No Characters recognized.</div>
+                    <div class="flashcard">No Clues recognized.</div>
                 {% endif %}
-        </div>
-        <div class="inner-content">
-            <h3>Hints and Clues</h3>
-            {% if clues %}
-                <ul style="padding-left: 1em;text-align: left;">
-                    {% for clue in clues %}
-                        <li><strong>{{ clue.clue_name }}</strong><br><md-span style="color: #888;"> {{ clue.description }} </md-span></li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <div class="flashcard">No Clues recognized.</div>
-            {% endif %}
-        </div>
-    </main>
-    <footer class="universal">
-        <form action="/" method="get" style="margin-top:20px;">
-            <button type="submit">Back to Overview</button>
-        </form>
-        <nav>
-            <a href="/">Home</a>
-            <a href="/add_text">Add new Story</a>
-        </nav>
-    </footer>
+            </div>
+        </main>
+        <footer class="universal">
+            <form action="/" method="get" style="margin-top:20px;">
+                <button type="submit">Back to Overview</button>
+            </form>
+            <nav>
+                <a href="/">Home</a>
+                <a href="/add_text">Add new Story</a>
+            </nav>
+        </footer>
+    </div>
+</div>
 </body>
 </html>

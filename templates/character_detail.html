@@ -26,14 +26,14 @@
 <body>
     <div class="main-content">
 
-      <div class="inner-content" style="flex: 0 0 1200px;">
+      <div class="inner-content" style="flex: 0 0 1000px;">
         <h2>{{ character.name }}</h2>
         <strong>{{ character.role }}:</strong><br>
                 {% if details %}
           <md-span> {{ details }} </md-span>
                 {% endif %}
 
-            <div class="flashcard" style="margin-top: 40px;">
+            <div class="flashcard" style="margin-top: 40px;border: none;">
                 <form class="form-character" action="/accuse_character/{{ character.id }}" method="GET" id="accusation">
                     <input type="text" value="{{ character.id }}" form="accusation" hidden>
                     <input class="input-visible" type="submit" value="Accuse Character" form="accusation" style="margin-top: 20px;">
@@ -41,7 +41,7 @@
                 <span id="char_name"><h3>Ask {{ character.name }} about</h3></span>
                 <form class="form-character" action="/ask_character" method="POST" id="ask_character" style="margin-bottom:32px; text-align:center;">
                     <div class="selection-row">
-                    <select name="pick_clue" id="pick_clue" >
+                    <select name="pick_clue" id="pick_clue" style="margin-bottom:20px;">
                         {% for clue in clues %}
                             <option value="{{ clue.id }}">{{ clue.clue_name }}</option>
                         {% endfor %}
@@ -52,13 +52,11 @@
                     <input class="input-visible" type="submit" value="Start Interrogation" id="interrogate" style="margin-top:10px;">
                 </form>
             </div>
+            {% if interrogation %}
             <div class="flashcard">
-
-                {% if interrogation %}
                 <md-span> {{ interrogation }} </md-span>
-            {% endif %}
-
             </div>
+            {% endif %}
     <footer class="universal">
         <nav>
             <a href="/">Home</a>

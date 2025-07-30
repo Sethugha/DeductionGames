@@ -10,17 +10,19 @@
 <body>
     <div class="main-content">
 
-      <div class="inner-content" style="flex: 0 0 1200px;">
-        <h2> {{ character.name }}:</h2><br>
-          <md-span> {{ validation }} </md-span>
-        {% if condition %}
-            <img src="../static/images/Winner.png" alt="{{ condition }}">
-            <md-span> {{ remark }} </md-span>
+        <div class="inner-content" style="flex: 0 0 1200px;">
+            <h2> {{ character.name }}:</h2><br>
+            <md-span> {{ validation }} </md-span>
+            {% if condition %}
+                <img src="../static/images/Winner.png" alt="{{ condition }}">
+                <h3>You did it! A stellar career lies to your feet!</h3>
+                <md-span> {{ remark }} </md-span>
 
-        {% else %}
-            <img src="../static/images/Looser.png">
-            <md-span> {{ remark }} </md-span>
-        {% endif %}
+            {% else %}
+                <img src="../static/images/Looser.png">
+                <h3>That did not end well. Maybe you need more than a diploma from a comic book?</h3>
+                <md-span> {{ remark }} </md-span>
+            {% endif %}
       </div>
     </div>
     <footer class="universal">

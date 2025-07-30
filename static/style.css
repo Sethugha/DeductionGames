@@ -5,7 +5,7 @@
 --primary-color: #4CAF50;
 --primary-color-dark: darken(var(--primary-color), 25%);
 --primary-color-bright: brighten(var(--primary-color), 25%);
---bg-color: #f9f9f9;
+--bg-color: grey;
 --card-bg: #f0f0f0;
 --card-hover-bg: #e8f5e9;
 --text-color: #333;
@@ -14,10 +14,21 @@
 --border-color: #ddd;
 
 body {
-  margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  background: var(--bg-color);
 }
+
+.outer-ridge {
+  position: absolute;
+  inset: 0px;
+}
+
+.inner-ridge {
+  position: relative;
+  inset: 0px;
+  margin: 0 10% auto;
+  border: 1px solid blue;
+}
+
 
 .no-cases {
   color: #888;
@@ -47,10 +58,10 @@ header {
   text-align: center;
   position: relative;
   bottom: 40px;
-  flex: 0 0 800px;
+  flex: 0 0 600px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: space-between;
   justify-content: flex-start;
 }
 
@@ -213,12 +224,13 @@ footer.universal {
 }
 
 .flashcard {
-  background-color: #fdfdfd;
-  border: 1px solid var(--border-color);
+  background-color: #f0f0f0;
+  border: 1px solid #c0c0c0;
   border-radius: 8px;
   margin-bottom: 30px;
   font-size: 1em;
   line-height: 1.5;
+  padding: 10px;
 
 
   strong {
