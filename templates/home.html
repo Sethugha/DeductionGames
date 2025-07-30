@@ -8,7 +8,7 @@
     <script type="module" src="https://md-block.verou.me/md-block.js"></script>
 
 </head>
-<body onload="clearMark()">
+<body onload="clearMark()" >
 <div class="outer-ridge">
   <div class="inner-ridge">
     <header>
@@ -29,9 +29,7 @@
                 <label>Content Diversity<input type="text" name="top_p" id="top_p" size="5" placeholder="{{ aiconfig.ai_top_p }}" onInput="setMark()"></label>
                 <label>Token/Step<input type="text" name="top_k" id="top_k" size="5" placeholder="{{ aiconfig.ai_top_k }}" onInput="setMark()"></label>
                 <label>Max Token<input type="text" name="max_out" id="max_out" size="10" placeholder="{{ aiconfig.ai_max_out }}" onInput="setMark()"></label>
-                <label><input type="checkbox" id="zero" name="zero" onChange="setMark()">Use only zero prompts</label>
-                 <input type="text" id="zero_checked" name="zero_checked" hidden>
-                 <input type="submit" value="Set" class="input-visible" style="padding: 8px 12px;" id="set_config">
+                <input type="submit" value="Set" class="input-visible" style="padding: 8px 12px;" id="set_config">
              </form>
         </aside>
 
@@ -109,11 +107,9 @@
     }
     function setMark() {
      document.getElementById("changed").value = 1;
-     document.getElementById('zero_checked').value = document.getElementById("zero").checked;
      document.getElementById("set_config").style.visibility = 'visible';
     }
     function clearMark() {
-     document.getElementById('zero_checked').value = document.getElementById("zero").checked;
      document.getElementById("changed").value = 0;
      document.getElementById("set_config").style.visibility = 'hidden';
     }

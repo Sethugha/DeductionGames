@@ -15,18 +15,20 @@
 
 body {
   font-family: 'Segoe UI', sans-serif;
+  background-color: grey;
 }
 
 .outer-ridge {
   position: absolute;
   inset: 0px;
+
 }
 
 .inner-ridge {
   position: relative;
   inset: 0px;
   margin: 0 10% auto;
-  border: 1px solid blue;
+
 }
 
 
@@ -73,6 +75,7 @@ header {
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  color: grey;
 
 
   form {
@@ -135,6 +138,9 @@ header {
       height: 160px;
       padding: 10px;
       gap: 10px;
+      opacity: 0.7;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+
     }
 
     .button-column {
@@ -166,20 +172,39 @@ footer.universal {
   text-align: center;
   margin-top: 60px;
   padding: 20px;
-  background-color: #eee;
+  background: transparent;
 
   nav a {
 
     margin: 0 10px;
-    color: #444;
+    color: #947;
     text-decoration: none;
     font-weight: bold;
+    background: transparent;
 
     &:hover {
       text-decoration: underline;
     }
   }
 }
+
+
+input {
+    background-color: #ddd;
+    border: 1px solid #ddd;
+
+    &:hover {
+        box-shadow: 2px 2px 2px 1px rgb(0 0 0 / 20%) inset;
+    }
+
+    &:active {
+        border: 1px solid #ddd;
+        box-shadow: 3px 3px 3px 2px rgb(0 0 0 / 30%) inset;
+    }
+}
+
+
+
 
  input[type="submit"] {
     max-width: 400px;
