@@ -78,7 +78,8 @@ class AIRequest():
         else:
             with open('Sources/basic_prompts/prompt1.json') as jf:
                 prompt1 = json.load(jf)
-            prompt = f"Based on the text {data_string}, " + prompt1.content
+
+            prompt = f"{prompt1['content']}"
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -138,7 +139,7 @@ class AIRequest():
         else:
             with open('Sources/basic_prompts/prompt2.json') as jf:
                 prompt2 = json.load(jf)
-            prompt = f"Based on {clue}, " + prompt2.content
+            prompt = f"{prompt2['content']}"
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -187,7 +188,7 @@ class AIRequest():
         else:
             with open('Sources/basic_prompts/prompt3.json') as jf:
                 prompt3 = json.load(jf)
-            prompt = f"Based on {character}, " + prompt3.content
+            prompt = f"{prompt3['content']}"
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -234,7 +235,7 @@ class AIRequest():
         else:
             with open('Sources/basic_prompts/prompt4.json') as jf:
                 prompt4 = json.load(jf)
-            prompt = f"You are the character {character.name}" + prompt4.content
+            prompt = f"{prompt4['content']}"
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -286,7 +287,7 @@ class AIRequest():
         else:
             with open('Sources/basic_prompts/prompt5.json') as jf:
                 prompt5 = json.load(jf)
-            prompt = f"You are the character {character.name}" + prompt5.content
+            prompt = f"{prompt5['content']}"
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -341,7 +342,7 @@ class AIRequest():
         else:
             with open('Sources/basic_prompts/prompt6.json') as jf:
                 prompt6 = json.load(jf)
-            prompt = f"{prompt6.content}"
+            prompt = f"{prompt6['content']}"
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
