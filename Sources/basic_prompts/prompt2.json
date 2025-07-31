@@ -1,4 +1,4 @@
 {
     "title": "hint_request",
-    "content": "Based on {clue}, reveal additional facts about it.\r\nCreate an answer in plain english as if it came from an observer\r\nreporting your findings. \r\n"
+    "content": "Based on {clue}, reveal additional facts about it.\r\nCreate an answer in plain english as if it came from an observer\r\nreporting your findings."
 }

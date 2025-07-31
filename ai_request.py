@@ -51,6 +51,7 @@ class AIRequest():
 
     def metamorphosis(self, data_string, case_id):
         """Order the metamorphosis text --> game. Uses meta prompting"""
+        print("airequest.py - ZERO: ", ZERO)
         if not ZERO:
             prompt = f"""You are a script author ordered to create a script for a deduction game
                          out of the given crime story {data_string}.
@@ -75,9 +76,9 @@ class AIRequest():
                          'evidence': The clue names which are pointing to the crime, as comma separated strings.
                       """
         else:
-            with open('Sources/basic_prompts/1.txt') as pfile:
-                prompt = pfile.read()
-            prompt = f"Based on the text {data_string}, " + prompt
+            with open('Sources/basic_prompts/prompt1.json') as jf:
+                prompt1 = json.load(jf)
+            prompt = f"Based on the text {data_string}, " + prompt1.content
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -107,7 +108,7 @@ class AIRequest():
         storage.add_object_to_db_session(conversation)
         # Remove Markdown-Code-Block-Format
         response_text = response_text.replace('```json', '').replace('```', '').strip()
-        print(response_text)
+
         # Validiere und verarbeite die Antwort
         try:
             result = json.loads(response_text)
@@ -120,6 +121,7 @@ class AIRequest():
         """
         Order information about a clue or suspect.
         """
+        print("airequest.py - ZERO: ", ZERO)
         if not ZERO:
             prompt = f"""
                     You are the investigator in the field. You have studied the known facts
@@ -130,13 +132,13 @@ class AIRequest():
                     Every additional examination of a clue reveals up to 2 new details if these
                     are mentioned within {data_string} but not in {clue}.
                     Create an answer in plain english as if it came from an observer
-                    reporting your findings. Example: "Examining the chair you found out that
-                    someone must have stood on it." 
+                    reporting your findings. Example: 'Examining the chair you found out that
+                    someone must have stood on it.' 
                     """
         else:
-            with open('Sources/basic_prompts/2.txt') as pfile:
-                prompt = pfile.read()
-            prompt = f"Based on {clue}, " + prompt
+            with open('Sources/basic_prompts/prompt2.json') as jf:
+                prompt2 = json.load(jf)
+            prompt = f"Based on {clue}, " + prompt2.content
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -171,6 +173,7 @@ class AIRequest():
         """
         Order information about a witness or suspect.
         """
+        print("airequest.py - ZERO: ", ZERO)
         if not ZERO:
             prompt = f"""
                     You are an actor playing an aquaintance of {character} 
@@ -178,13 +181,13 @@ class AIRequest():
                     to events and facts described in this crime story.
                     You must not use any knowledge from outside or draw own conclusions.
                     Answer directly without hedging the questions.
-                    Your task is to play the role authentical, not to "win" the interrogation.
-                    Example: "The bell-rope is a fake? So what! It´s an accessory, nothing else!"
+                    Your task is to play the role authentical, not to 'win' the interrogation.
+                    Example: 'The bell-rope is a fake? So what! It´s an accessory, nothing else!'
                     """
         else:
-            with open('Sources/basic_prompts/3.txt') as pfile:
-                prompt = pfile.read()
-            prompt = f"Based on {character}, " + prompt
+            with open('Sources/basic_prompts/prompt3.json') as jf:
+                prompt3 = json.load(jf)
+            prompt = f"Based on {character}, " + prompt3.content
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -219,18 +222,19 @@ class AIRequest():
         """
         Order information about a clue or suspect. Always zero.
         """
+        print("airequest.py - ZERO: ", ZERO)
         if not ZERO:
             prompt = f"""
                      You are an actor playing the character {character.name} 
                      from the crime story {data_string}. Your complete knowledge is restricted
                      to events and facts described in this crime story.
                      You must not use any knowledge from outside or draw own conclusions.
-                     Your task is to play the role authentically, not to "win" the interrogation.
+                     Your task is to play the role authentically, not to 'win' the interrogation.
                      """
         else:
-            with open('Sources/basic_prompts/4.txt') as pfile:
-                prompt = pfile.read()
-            prompt = f"You are the character {character.name}" + prompt
+            with open('Sources/basic_prompts/prompt4.json') as jf:
+                prompt4 = json.load(jf)
+            prompt = f"You are the character {character.name}" + prompt4.content
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -265,6 +269,7 @@ class AIRequest():
         The culprit will give up.
         few-shot prompt
         """
+        print("airequest.py - ZERO: ", ZERO)
         if not ZERO:
             prompt = f"""
                     You are an actor playing the character {character.name} 
@@ -272,16 +277,16 @@ class AIRequest():
                     confronted with the evidences {evidences}. Your complete knowledge is restricted
                     to events and facts described in this crime story.
                     You must not use any knowledge from outside or draw own conclusions.
-                    Your task is to play the role authentically, not to "win" the interrogation.
+                    Your task is to play the role authentically, not to 'win' the accusation.
                     If the evidences cover about 50% of the facts, break down and confess, 
-                    attach the string "##WON" to your answer.
+                    attach the string '##WON' to your answer.
                     If the evidences cover less than about 50% then laugh the investigator down, 
-                    attach the string "##LOST" to your answer.
+                    attach the string '##LOST' to your answer.
                     """
         else:
-            with open('Sources/basic_prompts/5.txt') as pfile:
-                prompt = pfile.read()
-            prompt = f"You are the character {character.name}" + prompt
+            with open('Sources/basic_prompts/prompt5.json') as jf:
+                prompt5 = json.load(jf)
+            prompt = f"You are the character {character.name}" + prompt5.content
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -316,6 +321,7 @@ class AIRequest():
         Look for additional indicators at a crime scene.
         Few-shot prompt
         """
+        print("airequest.py - ZERO: ", ZERO)
         if not ZERO:
             prompt = f"""
                       You are the investigator, looking for indicators 
@@ -333,11 +339,11 @@ class AIRequest():
                       indicators.     
                       """
         else:
-            with open('Sources/basic_prompts/6.txt') as pfile:
-                prompt = pfile.read()
-            ai_request = f"{prompt}"
+            with open('Sources/basic_prompts/prompt6.json') as jf:
+                prompt6 = json.load(jf)
+            prompt = f"{prompt6.content}"
         start = time.perf_counter()
-        response = self.model.generate_content(ai_request)
+        response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
         response_text = response.text.split('#RV#')[0].strip()
         with open('ai_config.json', 'r') as jf:
@@ -367,10 +373,8 @@ class AIRequest():
                                     conv_metadata=token_counts,
                                     avg_time=elapsed)
         storage.add_object_to_db_session(conversation)
-
         # Remove Markdown-Code-Block-Format
         # response_text = response_text.replace('```json', '').replace('```', '').strip()
-
         return response_text
 
 

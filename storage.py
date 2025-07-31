@@ -381,18 +381,18 @@ def deactivate_status(entity):
     except Exception as e:  # For Debugging and Testing catch all Exceptions
         return None
 
-def json_dump_config(id):
+def json_dump_config(config_obj, zero):
     """dumps active ai_config into json file"""
-    ai_config = db.session.query(AIConfig).filter(AIConfig.id==id).first()
+
     aiconfig = {
-                'config_id': id,
-                'ai_model': ai_config.ai_model,
-                'ai_role': ai_config.ai_role,
-                'ai_temperature': ai_config.ai_temperature,
-                'ai_top_p': ai_config.ai_top_p,
-                'ai_top_k': ai_config.ai_top_k,
-                'ai_max_out': ai_config.ai_max_out,
-                'zero': zero
+                'config_id': config_obj.id,
+                'zero': zero,
+                'ai_model': config_obj.ai_model,
+                'ai_role': config_obj.ai_role,
+                'ai_temperature': config_obj.ai_temperature,
+                'ai_top_p': config_obj.ai_top_p,
+                'ai_top_k': config_obj.ai_top_k,
+                'ai_max_out': config_obj.ai_max_out
                 }
     with open('ai_config.json', 'w') as jf:
         json.dump(aiconfig, jf, indent=4)
@@ -419,6 +419,7 @@ def gather_conversations(id):
         except Exception as e:  # For Debugging and Testing catch all Exceptions
             return f"DB Access failed: Exception {e}."
 
+
 def gather_ai_configs():
     """Gather ai configurations by prompt_id"""
     try:
@@ -426,14 +427,3 @@ def gather_ai_configs():
         return data
     except Exception as e:  # For Debugging and Testing catch all Exceptions
         return f"DB Access failed: Exception {e}."
-
-def cleanup_response_text(text):
-    """Indicators and character interrogations can lead to
-    enumerations which are looking bad in running text
-    thus this replacement of digits followed by a point,
-    e.g.: 1. get a heading '\n'
-    """
-    for num in "1234":
-        pattern=f" {num}. "
-        text = text.replace(pattern,"\n"+pattern)
-    return text

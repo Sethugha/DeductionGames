@@ -24,10 +24,13 @@ def home():
 
     cases = storage.retrieve_entity_from_db(Case)
     stories = storage.retrieve_entity_from_db(Text)
+    ai_config = storage.retrieve_aiconfig_by_status()
     with open('ai_config.json', 'r') as jf:
-        ai_config = json.load(jf)
-
-    return render_template('home.html', green=ai_config['zero'], stories=stories, cases=cases, aiconfig=ai_config, message="")
+        tconfig = json.load(jf)
+    zero =  tconfig['zero']
+    print(ai_config)
+    print(tconfig)
+    return render_template('home.html', green=zero, stories=stories, cases=cases, aiconfig=ai_config, message="")
 
 
 @app.route('/select_case', methods=['GET','POST'])
@@ -43,9 +46,12 @@ def select_case():
             if case.status == 'closed':
                 cases = storage.retrieve_entity_from_db(Case)
                 stories = storage.retrieve_entity_from_db(Text)
+                ai_config = storage.retrieve_aiconfig_by_status()
                 with open('ai_config.json', 'r') as jf:
-                    ai_config = json.load(jf)
-                return render_template('home.html', green=ai_config['zero'], stories=stories, cases=cases,
+                    tconfig = json.load(jf)
+                zero = tconfig['zero']
+                storage.json_dump_config(ai_config, zero)
+                return render_template('home.html', green=zero, stories=stories, cases=cases,
                                        aiconfig=ai_config, message="This case is already solved.")
             cases = storage.retrieve_entity_from_db(Case)
             for case in cases:
@@ -54,7 +60,9 @@ def select_case():
             case = storage.read_entity_by_id(Case, case_id)
             if case:
                 characters = storage.read_characters_of_single_case(case.id)
+                print("character-list: ", characters)
                 clues = storage.read_clues_of_single_case(case.id)
+                print("clue-list: ", clues)
                 text = storage.read_entity_by_id(Text, case.source)
                 title = getattr(text, 'title', None) or case.title or "Case"
                 return render_template(
@@ -67,7 +75,9 @@ def select_case():
 
     case = storage.retrieve_case_by_status('active')
     characters = storage.read_characters_of_single_case(case.id)
+    print("character-list-running-case: ", characters)
     clues = storage.read_clues_of_single_case(case.id)
+    print("clue-list-running-case: ", clues)
     title = case.title
     return render_template(
          'card_boxes.html',
@@ -95,12 +105,15 @@ def generate_case():
     """
     stories = storage.retrieve_entity_from_db(Text)
     cases = storage.retrieve_entity_from_db(Case)
+    ai_config = storage.retrieve_aiconfig_by_status()
     with open('ai_config.json', 'r') as jf:
-        ai_config = json.load(jf)
+        tconfig = json.load(jf)
+    zero = tconfig['zero']
+    storage.json_dump_config(ai_config, zero)
     text_id = request.form.get('text_id')
     if not text_id:
         return render_template('home.html',
-                               green=ai_config['zero'],
+                               green=zero,
                                stories=stories,
                                cases=cases,
                                aiconfig=ai_config,
@@ -108,7 +121,7 @@ def generate_case():
     text = storage.read_entity_by_id(Text, text_id)
     if not text:
         return render_template('home.html',
-                               green=ai_config['zero'],
+                               green=zero,
                                stories=stories,
                                cases=cases,
                                aiconfig=ai_config,
@@ -120,7 +133,7 @@ def generate_case():
     already_used = storage.retrieve_case_via_source_text(text_id)
     if already_used:
         return render_template('home.html',
-                               green=ai_config['zero'],
+                               green=zero,
                                stories=stories,
                                cases=cases,
                                aiconfig=ai_config,
@@ -132,6 +145,7 @@ def generate_case():
     new_case = ai_client.metamorphosis(text.content, new_id)
     if isinstance(new_case, str):
         return render_template('zero_case.html', case=new_case)
+    print("generated-case: ", new_case)
     # Extract case title and introduction
     try:
         case_title = new_case.get('title', 'Case'+str(new_id))
@@ -306,21 +320,24 @@ def config_ai():
     new_id = find_highest_object_id(AIConfig)
     cases = storage.retrieve_entity_from_db(Case)
     stories = storage.retrieve_entity_from_db(Text)
+    ai_config = storage.retrieve_aiconfig_by_status()
     with open('ai_config.json', 'r') as jf:
-        ai_config = json.load(jf)
+        tconfig = json.load(jf)
+    zero = tconfig['zero']
+    storage.json_dump_config(ai_config, zero)
+
     changed = request.form.get('changed')
-    ai_model = request.form.get('model') or ai_config['ai_model']
-    ai_role = request.form.get('role') or ai_config['ai_role']
-    ai_temperature = request.form.get('temp') or ai_config['ai_temperature']
-    ai_top_p = request.form.get('top_p') or ai_config['ai_top_p']
-    ai_top_k = request.form.get('top_k') or ai_config['ai_top_k']
-    ai_max_out = request.form.get('max_out') or ai_config['ai_max_out']
-    zero = request.form.get('zero') or ai_config['free_prompts']
+    ai_model = request.form.get('model') or ai_config.ai_model
+    ai_role = request.form.get('role') or ai_config.ai_role
+    ai_temperature = request.form.get('temp') or ai_config.ai_temperature
+    ai_top_p = request.form.get('top_p') or ai_config.ai_top_p
+    ai_top_k = request.form.get('top_k') or ai_config.ai_top_k
+    ai_max_out = request.form.get('max_out') or ai_config.ai_max_out
+    zero = request.form.get('zero') or tconfig['zero']
 
     if changed:
 
         new_config = AIConfig(status=1,
-                              free_prompts=zero,
                               ai_model=ai_model,
                               ai_role=ai_role,
                               ai_temperature=ai_temperature,
@@ -332,18 +349,23 @@ def config_ai():
         storage.add_object_to_db_session(new_config)
         storage.json_dump_config(new_id, zero)
         # reinit ai_client
+        ai_config = storage.retrieve_aiconfig_by_status()
         with open('ai_config.json', 'r') as jf:
-            ai_config = json.load(jf)
+            tconfig = json.load(jf)
+        zero = tconfig['zero']
         ai_client = AIRequest()
-        message = f"AI reconfigured to profile {new_id}"
-    return render_template('home.html', green=ai_config['zero'], stories=stories, cases=cases, aiconfig=ai_config,
-                               message=message or "")
+        message = f"AI reconfigured to profile {ai_config.id}"
+        return render_template('home.html', green=zero, stories=stories, cases=cases, aiconfig=ai_config,
+                               message=message)
+    return render_template('home.html', green=zero, stories=stories, cases=cases,
+                           aiconfig=ai_config)
 
 
 @app.route('/del_case', methods=['POST'])
 def del_case():
     """deletes selected case from db"""
     case_id = request.form.get('case_id')
+    message=""
     if case_id:
         case = storage.read_entity_by_id(Case, case_id)
         characters = storage.read_characters_of_single_case(case_id)
@@ -354,26 +376,40 @@ def del_case():
         for clue in clues:
             storage.delete_object_from_db(clue)
         storage.delete_object_from_db(solution)
-        message = storage.delete_object_from_db(case)
+        storage.delete_object_from_db(case)
+        message = f"Case {case.title} deleted"
     cases = storage.retrieve_entity_from_db(Case)
     stories = storage.retrieve_entity_from_db(Text)
+    ai_config = storage.retrieve_aiconfig_by_status()
     with open('ai_config.json', 'r') as jf:
-        ai_config = json.load(jf)
-    return render_template('home.html', green=ai_config['zero'], stories=stories, cases=cases, aiconfig=ai_config, message=message)
+        tconfig = json.load(jf)
+    zero = tconfig['zero']
+    storage.json_dump_config(ai_config, zero)
+    return render_template('home.html',
+                           green=zero,
+                           stories=stories,
+                           cases=cases,
+                           aiconfig=ai_config,
+                           message=message)
 
 
 @app.route('/del_text', methods=['POST'])
 def del_text():
     """deletes selected text from db"""
     text_id=request.form.get('text_id')
+    message=""
     if text_id:
         text = storage.read_entity_by_id(Text, text_id)
-        message= storage.delete_object_from_db(text)
+        storage.delete_object_from_db(text)
+        message = f"Text {text.title} deleted."
     cases = storage.retrieve_entity_from_db(Case)
     stories = storage.retrieve_entity_from_db(Text)
+    ai_config = storage.retrieve_aiconfig_by_status()
     with open('ai_config.json', 'r') as jf:
-        ai_config = json.load(jf)
-    return render_template('home.html', green=ai_config['zero'], stories=stories, cases=cases, aiconfig=ai_config, message=message)
+        tconfig = json.load(jf)
+    zero = tconfig['zero']
+    storage.json_dump_config(ai_config, zero)
+    return render_template('home.html', green=zero, stories=stories, cases=cases, aiconfig=ai_config, message=message)
 
 
 @app.route('/analysis', methods=['POST'])
@@ -415,18 +451,6 @@ def toggle_prompts():
         ai_config['zero'] = 1
     with open('ai_config.json', 'w') as jf:
         json.dump(ai_config, jf, indent=4)
-    new_config = AIConfig(status=1,
-                          free_prompts=zero,
-                          ai_model=ai_config['ai_model'],
-                          ai_role=ai_config['ai_role'],
-                          ai_temperature=ai_config['ai_temperature'],
-                          ai_top_p=ai_config['ai_top_p'],
-                          ai_top_k=ai_config['ai_top_k'],
-                          ai_max_out=ai_config['ai_max_out']
-                          )
-    storage.deactivate_status(AIConfig)
-    storage.add_object_to_db_session(new_config)
-
     return redirect(url_for('home'))
 
 
@@ -468,6 +492,6 @@ if __name__ == "__main__":
         db.init_app(app)
         #with app.app_context():
         #    db.create_all()
-        app.run(host="127.0.0.1", port=5000, debug=True)
+        app.run(host="127.0.0.1", port=5002, debug=True)
     else:
         print("No database accessible. Aborting.")
