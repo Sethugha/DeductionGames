@@ -139,7 +139,8 @@ class AIRequest():
         else:
             with open('Sources/basic_prompts/prompt2.json') as jf:
                 prompt2 = json.load(jf)
-            prompt = f"{prompt2['content']}"
+            prompt = f"Your data: {data_string}, {clue}. {prompt2['content']}"
+            print("raw_prompt: ", prompt)
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -188,7 +189,7 @@ class AIRequest():
         else:
             with open('Sources/basic_prompts/prompt3.json') as jf:
                 prompt3 = json.load(jf)
-            prompt = f"{prompt3['content']}"
+            prompt = f"Your data: {data_string}, {character}. {prompt3['content']}"
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -235,7 +236,7 @@ class AIRequest():
         else:
             with open('Sources/basic_prompts/prompt4.json') as jf:
                 prompt4 = json.load(jf)
-            prompt = f"{prompt4['content']}"
+            prompt = f"Your data: {data_string}, {character}. {prompt4['content']}"
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -287,7 +288,7 @@ class AIRequest():
         else:
             with open('Sources/basic_prompts/prompt5.json') as jf:
                 prompt5 = json.load(jf)
-            prompt = f"{prompt5['content']}"
+            prompt = f"Your data: {data_string}, {character}, {evidences}. {prompt5['content']}"
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -342,7 +343,7 @@ class AIRequest():
         else:
             with open('Sources/basic_prompts/prompt6.json') as jf:
                 prompt6 = json.load(jf)
-            prompt = f"{prompt6['content']}"
+            prompt = f"Your data: {search_string}, {clue}. {prompt6['content']}"
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
