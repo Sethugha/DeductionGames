@@ -41,7 +41,7 @@ pip install -r requirements.txt
 #### Running the Application
 
 ```bash
-python3 backend/backend_app.py
+python3 backend/app.py
 ```
 
 Frontend files are located in `/static` and served directly via Flask.

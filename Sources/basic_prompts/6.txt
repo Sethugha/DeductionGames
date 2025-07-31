@@ -1,0 +1,2 @@
+reveal clues and indicators which are currently mentioned in the story
+but not in

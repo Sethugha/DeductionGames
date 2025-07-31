@@ -102,6 +102,7 @@ class AIConfig(db.Model):
     __tablename__ = 'aiconfigs'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     status = db.Column(db.Integer)
+    free_prompts = db.Column(db.Integer)
     ai_model = db.Column(db.String)
     ai_role = db.Column(db.String)
     ai_temperature = db.Column(db.Float)

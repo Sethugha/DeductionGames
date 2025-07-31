@@ -6,22 +6,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script type="module" src="https://md-block.verou.me/md-block.js"></script>
     <title>Case</title>
-    <style>
-        input[type="text"],
-        textarea {
-        width: 100%;
-        padding: 10px;
-        font-size: .9em;
-        border-radius: 6px;
-        border: 1px solid #ccc;
-        box-sizing: border-box;
-    }
 
-    textarea {
-      min-height: 160px;
-      resize: vertical;
-    }
-    </style>
+
 </head>
 <body>
 
@@ -42,8 +28,13 @@
                     <input type="submit" value="Search"  style="margin-top:10px;">
                 </form>
             </div>
-            {% block content %}
-            {% endblock %}
+            {% if indicators %}
+            <div class="flashcard-character">
+                <strong>New Indicators:</strong><br>
+                <md-span> {{ indicators }} </md-span>
+                {% endif %}
+            </div>
+    </div>
         </div>
     </div>
     <footer class="universal">

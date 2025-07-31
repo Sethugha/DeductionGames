@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Prompt Lab</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+<body>
+<div class="outer-ridge">
+  <div class=inner-ridge">
+    <header>
+        <h1>Prompt Lab</h1>
+    </header>
+    <div class="main-content">
+        <div class="inner-content" style="flex: 0 0 800px;">
+
+          <div class="flashcard-grey">
+
+              <form action="/edit_prompts" method="POST" id="edit_prompts" >
+                <label>Import json
+                <input class="input-visible" type="file" id="json_file" name="json_file" accept=".json"></label>
+                <input class="input-visible" type="submit" value="Load json">
+              </form>
+          </div>
+          {% if title %}
+          <div class="flashcard-grey" style="height: 300px;padding: 10px;">
+              <form action="/save_prompt" method="POST" id="save_prompt" >
+                <h3>{{ title }}</h3>
+                  <textarea id="prompt" name="prompt" cols="90" rows="10" >{{ prompt }}</textarea>
+                  <input type="text" id="ht" name="ht" value="{{ title }}" hidden>
+                  <input type="text" id="fp" name="fp" value="{{ fullpath }}" hidden>
+                <input class="input-visible" type="submit" value="Save Changes">
+              </form>
+          </div>
+          {% endif %}
+    <footer class="universal">
+          <nav>
+            <a href="/">Home</a>
+          </nav>
+        </footer>
+        </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

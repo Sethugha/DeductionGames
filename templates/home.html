@@ -9,8 +9,7 @@
 
 </head>
 <body onload="clearMark()" >
-<div class="outer-ridge">
-  <div class="inner-ridge">
+
     <header>
         <h1>Mystery Machine</h1>
          {% if message %}
@@ -23,13 +22,20 @@
         <aside class="side-form">
              <form method="POST" action="/config_ai" id="config_ai">
                 <input type="text" name="changed" id="changed" hidden>
-                <label>Model<input type="text" name="model" id="model" size="10" placeholder="{{ aiconfig.ai_model }}" onInput="setMark()"></label>
-                <label>Role<input type="text" name="role" id="role" size="10" placeholder="{{ aiconfig.ai_role }}" onInput="setMark()"></label>
-                <label>Random Factor<input type="text" name="temp" id="temp" size="10" placeholder="{{ aiconfig.ai_temperature }}" onInput="setMark()"></label>
-                <label>Content Diversity<input type="text" name="top_p" id="top_p" size="5" placeholder="{{ aiconfig.ai_top_p }}" onInput="setMark()"></label>
-                <label>Token/Step<input type="text" name="top_k" id="top_k" size="5" placeholder="{{ aiconfig.ai_top_k }}" onInput="setMark()"></label>
-                <label>Max Token<input type="text" name="max_out" id="max_out" size="10" placeholder="{{ aiconfig.ai_max_out }}" onInput="setMark()"></label>
+                <label>Model<input type="text" name="model" id="model" size="10" placeholder="{{ aiconfig['ai_model'] }}" onInput="setMark()"></label>
+                <label>Role<input type="text" name="role" id="role" size="10" placeholder="{{ aiconfig['ai_role'] }}" onInput="setMark()"></label>
+                <label>Random Factor<input type="text" name="temp" id="temp" size="10" placeholder="{{ aiconfig['ai_temperature'] }}" onInput="setMark()"></label>
+                <label>Content Diversity<input type="text" name="top_p" id="top_p" size="5" placeholder="{{ aiconfig['ai_top_p'] }}" onInput="setMark()"></label>
+                <label>Token/Step<input type="text" name="top_k" id="top_k" size="5" placeholder="{{ aiconfig['ai_top_k'] }}" onInput="setMark()"></label>
+                <label>Max Token<input type="text" name="max_out" id="max_out" size="10" placeholder="{{ aiconfig['ai_max_out'] }}" onInput="setMark()"></label>
                 <input type="submit" value="Set" class="input-visible" style="padding: 8px 12px;" id="set_config">
+             </form>
+             <form method="GET" action="/toggle_prompts" id="toggle_prompts">
+                 {% if green %}
+                 <input type="submit" value="Additional Prompts" class="input-visible" style="padding: 8px 12px; background-color: green;" id="tgl_prompts">
+                 {% else %}
+                 <input type="submit" value="Additional Prompts" class="input-visible" style="padding: 8px 12px; background-color: red;" id="tgl_prompts">
+                 {% endif %}
              </form>
         </aside>
 
@@ -89,12 +95,14 @@
             <nav>
                <a href="/">Home</a>
                <a href="/add_text">Add new Story</a>
+               {% if green %}
+               <a href="/edit_prompts">Edit Prompts</a>
+               {% endif %}
             </nav>
             </footer>
         </section>
       </main>
-  </div>
-</div>
+
 <script type='text/javascript'>
     function setCase() {
      var optionValue = document.getElementById("pick_case").value;
@@ -112,6 +120,13 @@
     function clearMark() {
      document.getElementById("changed").value = 0;
      document.getElementById("set_config").style.visibility = 'hidden';
+    }
+    function togglePrompts() {
+     const allow = document.getElementById("zero").value
+     if (allow == 1) {document.getElementById("zero").value = 0;
+     if (allow == 0) {document.getElementById("zero").value = 1;
+
+
     }
 </script>
 </body>

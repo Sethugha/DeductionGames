@@ -1,0 +1,3 @@
+Reveal additional facts about it.
+Create an answer in plain english as if it came from an observer
+reporting your findings.

@@ -1,0 +1,3 @@
+create a deduction game by extracting a title, short description of the criminal case,
+a list of the characters their roles and about 5-7 clues pointing to the crime.
+Answer in json.

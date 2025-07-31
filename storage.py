@@ -391,7 +391,8 @@ def json_dump_config(id):
                 'ai_temperature': ai_config.ai_temperature,
                 'ai_top_p': ai_config.ai_top_p,
                 'ai_top_k': ai_config.ai_top_k,
-                'ai_max_out': ai_config.ai_max_out
+                'ai_max_out': ai_config.ai_max_out,
+                'zero': zero
                 }
     with open('ai_config.json', 'w') as jf:
         json.dump(aiconfig, jf, indent=4)
@@ -425,3 +426,14 @@ def gather_ai_configs():
         return data
     except Exception as e:  # For Debugging and Testing catch all Exceptions
         return f"DB Access failed: Exception {e}."
+
+def cleanup_response_text(text):
+    """Indicators and character interrogations can lead to
+    enumerations which are looking bad in running text
+    thus this replacement of digits followed by a point,
+    e.g.: 1. get a heading '\n'
+    """
+    for num in "1234":
+        pattern=f" {num}. "
+        text = text.replace(pattern,"\n"+pattern)
+    return text

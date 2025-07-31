@@ -19,7 +19,7 @@ API_KEY = os.getenv("GEMINI_API_KEY")
 with open('ai_config.json', 'r') as jf:
     ai_config = json.load(jf)
 CURRENT_AI_CONFIG = ai_config['config_id']
-
+ZERO = ai_config['zero']
 genai.configure(api_key=API_KEY)
 
 # List available models and pick the right one
@@ -51,29 +51,33 @@ class AIRequest():
 
     def metamorphosis(self, data_string, case_id):
         """Order the metamorphosis text --> game. Uses meta prompting"""
-
-        prompt = f"""You are a script author ordered to create a script for a deduction game
-        out of the given crime story {data_string}.
-        Your complete knowledge about events, evidences and facts arises from the crime story itself.
-        You must not use any knowledge not included in the story.
-        You must not make own deductions.
-        Do not give explanations, only create a json object as visible below:
-        'title': extracted story title or a telling case title. 
-        'introduction': Short description of the crime case (about 5-7 sentences).
-        'characters': Extract the persons contained in {data_string} and deliver a list of dicts,
-        each containing the full name using key 'name' and the person´s role in the story using key 'role'.
-        'clues': Up to 7 dictionaries each representing a clue with rules as follow:
-        Every item, occurrence or witness linked to the crime is a clue. 
-        Store clues as visible below: 
-        'clue_name': name.
-        'clue_description': A brief description of the clue and its possible connection o the crime.
-        'clue_details': 3 significant attributes pointing to the crime as comma separated strings.
-        Solution:
-        Store the solution as dictionary with keys below:
-        'culprit': The perpetrator´s full name and a telling overview of the mystery.
-        'method': The method how the crime was done matching the story as exactly as possible.
-        'evidence': The clue names which are pointing to the crime, as comma separated strings.
-        """
+        if not ZERO:
+            prompt = f"""You are a script author ordered to create a script for a deduction game
+                         out of the given crime story {data_string}.
+                         Your complete knowledge about events, evidences and facts arises from the crime story itself.
+                         You must not use any knowledge not included in the story.
+                         You must not make own deductions.
+                         Do not give explanations, only create a json object as visible below:
+                         'title': extracted story title or a telling case title. 
+                         'introduction': Short description of the crime case (about 5-7 sentences).
+                         'characters': Extract the persons contained in {data_string} and deliver a list of dicts,
+                         each containing the full name using key 'name' and the person´s role in the story using key 'role'.
+                         'clues': Up to 7 dictionaries each representing a clue with rules as follow:
+                         Every item, occurrence or witness linked to the crime is a clue. 
+                         Store clues as visible below: 
+                         'clue_name': name.
+                         'clue_description': A brief description of the clue and its possible connection o the crime.
+                         'clue_details': 3 significant attributes pointing to the crime as comma separated strings.
+                         Solution:
+                         Store the solution as dictionary with keys below:
+                         'culprit': The perpetrator´s full name and a telling overview of the mystery.
+                         'method': The method how the crime was done matching the story as exactly as possible.
+                         'evidence': The clue names which are pointing to the crime, as comma separated strings.
+                      """
+        else:
+            with open('Sources/basic_prompts/1.txt') as pfile:
+                prompt = pfile.read()
+            prompt = f"Based on the text {data_string}, " + prompt
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -82,14 +86,15 @@ class AIRequest():
         current_config = ai_config['config_id']
         statistics = f"statistics/response_candidates{time.strftime("%Y%m%d-%H%M%S")}.log"
         with open(statistics,'w') as sf:
-            sf.write(str(response.candidates))
+            sf.write(f"prompt: {ai_config['zero']} | {str(response.candidates)}")
 
         response_text = response.text.strip()
 
-        token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
-                       + str(response.usage_metadata.cached_content_token_count) + ", " \
-                       + str(response.usage_metadata.candidates_token_count) + ", " \
-                       + str(response.usage_metadata.total_token_count)
+        token_counts = f"""prompt: {response.usage_metadata.prompt_token_count}, 
+                           cached: {response.usage_metadata.cached_content_token_count},
+                           candidates: {response.usage_metadata.candidates_token_count},
+                           total: {response.usage_metadata.total_token_count}
+                       """
 
 
         conversation = Conversation(case_id=case_id,
@@ -108,25 +113,30 @@ class AIRequest():
             result = json.loads(response_text)
             return result
         except Exception as e:
-            return "Sorry, something went wrong."
+            return f"Response not usable as case: \n{response_text}"
 
 
     def ai_hint_request(self, data_string, clue):
         """
         Order information about a clue or suspect.
         """
-        prompt = f"""
-                You are the investigator in the field. You have studied the known facts
-                {clue} but you examine the crime site hoping to find
-                additional details.
-                You must not leave the story frame.
-                You must not use any deductions already mentioned in the story.
-                Every additional examination of a clue reveals up to 2 new details if these
-                are mentioned within {data_string} but not in {clue}.
-                Create an answer in plain english as if it came from an observer
-                reporting your findings. Example: "Examining the chair you found out that
-                someone must have stood on it." 
-                """
+        if not ZERO:
+            prompt = f"""
+                    You are the investigator in the field. You have studied the known facts
+                    {clue} but you examine the crime site hoping to find
+                    additional details.
+                    You must not leave the story frame.
+                    You must not use any deductions already mentioned in the story.
+                    Every additional examination of a clue reveals up to 2 new details if these
+                    are mentioned within {data_string} but not in {clue}.
+                    Create an answer in plain english as if it came from an observer
+                    reporting your findings. Example: "Examining the chair you found out that
+                    someone must have stood on it." 
+                    """
+        else:
+            with open('Sources/basic_prompts/2.txt') as pfile:
+                prompt = pfile.read()
+            prompt = f"Based on {clue}, " + prompt
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -159,17 +169,22 @@ class AIRequest():
 
     def ai_character_request(self, data_string, character):
         """
-        Order information about a clue or suspect.
+        Order information about a witness or suspect.
         """
-        prompt = f"""
-                You are an actor playing an aquaintance of {character} 
-                from the crime story {data_string}. Your complete knowledge is restricted
-                to events and facts described in this crime story.
-                You must not use any knowledge from outside or draw own conclusions.
-                Answer directly without hedging the questions.
-                Your task is to play the role authentical, not to "win" the interrogation.
-                Example: "The bell-rope is a fake? So what! It´s an accessory, nothing else!"
-                """
+        if not ZERO:
+            prompt = f"""
+                    You are an actor playing an aquaintance of {character} 
+                    from the crime story {data_string}. Your complete knowledge is restricted
+                    to events and facts described in this crime story.
+                    You must not use any knowledge from outside or draw own conclusions.
+                    Answer directly without hedging the questions.
+                    Your task is to play the role authentical, not to "win" the interrogation.
+                    Example: "The bell-rope is a fake? So what! It´s an accessory, nothing else!"
+                    """
+        else:
+            with open('Sources/basic_prompts/3.txt') as pfile:
+                prompt = pfile.read()
+            prompt = f"Based on {character}, " + prompt
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -202,15 +217,20 @@ class AIRequest():
 
     def ai_interrogation(self, data_string, character, clue, solution):
         """
-        Order information about a clue or suspect.
+        Order information about a clue or suspect. Always zero.
         """
-        prompt = f"""
-                You are an actor playing the character {character.name} 
-                from the crime story {data_string}. Your complete knowledge is restricted
-                to events and facts described in this crime story.
-                You must not use any knowledge from outside or draw own conclusions.
-                Your task is to play the role authentically, not to "win" the interrogation.
-                """
+        if not ZERO:
+            prompt = f"""
+                     You are an actor playing the character {character.name} 
+                     from the crime story {data_string}. Your complete knowledge is restricted
+                     to events and facts described in this crime story.
+                     You must not use any knowledge from outside or draw own conclusions.
+                     Your task is to play the role authentically, not to "win" the interrogation.
+                     """
+        else:
+            with open('Sources/basic_prompts/4.txt') as pfile:
+                prompt = pfile.read()
+            prompt = f"You are the character {character.name}" + prompt
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -233,11 +253,9 @@ class AIRequest():
                                     conv_metadata=token_counts,
                                     avg_time=elapsed)
         storage.add_object_to_db_session(conversation)
-
         # Remove Markdown-Code-Block-Format
         # response_text = response_text.replace('```json', '').replace('```', '').strip()
         # result = json.loads(response_text)
-
         return response_text
 
 
@@ -247,19 +265,23 @@ class AIRequest():
         The culprit will give up.
         few-shot prompt
         """
-        prompt = f"""
-                You are an actor playing the character {character.name} 
-                from the crime story {data_string}, accused of the crime and 
-                confronted with the evidences {evidences}. Your complete knowledge is restricted
-                to events and facts described in this crime story.
-                You must not use any knowledge from outside or draw own conclusions.
-                Your task is to play the role authentically, not to "win" the interrogation.
-                If the evidences cover about 50% of the facts, break down and confess, 
-                attach the string "##WON" to your answer.
-                If the evidences cover less than about 50% then laugh the investigator down, 
-                attach the string "##LOST" to your answer.
-            
-                """
+        if not ZERO:
+            prompt = f"""
+                    You are an actor playing the character {character.name} 
+                    from the crime story {data_string}, accused of the crime and 
+                    confronted with the evidences {evidences}. Your complete knowledge is restricted
+                    to events and facts described in this crime story.
+                    You must not use any knowledge from outside or draw own conclusions.
+                    Your task is to play the role authentically, not to "win" the interrogation.
+                    If the evidences cover about 50% of the facts, break down and confess, 
+                    attach the string "##WON" to your answer.
+                    If the evidences cover less than about 50% then laugh the investigator down, 
+                    attach the string "##LOST" to your answer.
+                    """
+        else:
+            with open('Sources/basic_prompts/5.txt') as pfile:
+                prompt = pfile.read()
+            prompt = f"You are the character {character.name}" + prompt
         start = time.perf_counter()
         response = self.model.generate_content(prompt)
         elapsed = time.perf_counter() - start
@@ -294,23 +316,28 @@ class AIRequest():
         Look for additional indicators at a crime scene.
         Few-shot prompt
         """
-        prompt = f"""
-                        You are the investigator, looking for indicators 
-                        which could deliver additional information about {clue}.
-                        Details which are part of of the crime story {data_string} and  
-                        associated with {clue} and {search_str} are to reveal with restrictions 
-                        as visible below:
-                        Any item, trail, witness, location or fact mentioned in the crime story but not in {clue} 
-                        is an indicator. 
-                        If there are no indicators give a subtle hint. Examples:'Nothing special caught your eye',
-                        'The witness shrugs, he has no idea.'  
-                        Reveal max 2 indicators of all indicators associated with {clue} and give a subtle hint to search 
-                        again if there are leftovers.
-                        Answer in plain english. To this answer append the string '#RV#' followed by a list of the revealed 
-                        indicators.     
-                        """
+        if not ZERO:
+            prompt = f"""
+                      You are the investigator, looking for indicators 
+                      which could deliver additional information about {clue}.
+                      Details which are part of of the crime story {data_string} and  
+                      associated with {clue} and {search_str} are to reveal with restrictions 
+                      as visible below:
+                      Any item, trail, witness, location or fact mentioned in the crime story but not in {clue} 
+                      is an indicator. 
+                      If there are no indicators give a subtle hint. Examples:'Nothing special caught your eye',
+                      'The witness shrugs, he has no idea.'  
+                      Reveal max 2 indicators of all indicators associated with {clue} and give a subtle hint to search 
+                      again if there are leftovers.
+                      Answer in plain english. To this answer append the string '#RV#' followed by a list of the revealed 
+                      indicators.     
+                      """
+        else:
+            with open('Sources/basic_prompts/6.txt') as pfile:
+                prompt = pfile.read()
+            ai_request = f"{prompt}"
         start = time.perf_counter()
-        response = self.model.generate_content(prompt)
+        response = self.model.generate_content(ai_request)
         elapsed = time.perf_counter() - start
         response_text = response.text.split('#RV#')[0].strip()
         with open('ai_config.json', 'r') as jf:
@@ -319,10 +346,15 @@ class AIRequest():
         statistics = f"statistics/response_candidates{time.strftime("%Y%m%d-%H%M%S")}.log"
         with open(statistics, 'w') as sf:
             sf.write(str(response.candidates))
-        revealed_indicators = response.text.split('#RV#')[1]
-        if revealed_indicators:
-            clue.clue_details = clue.clue_details + ',' + revealed_indicators
-            db.session.commit()
+        try:
+            revealed_indicators = response.text.split('#RV#')[1]
+        except IndexError:
+            revealed_indicators = response.text
+        finally:
+            if revealed_indicators:
+                clue.clue_details = clue.clue_details + ', ' + revealed_indicators
+                db.session.commit()
+
         token_counts = "" + str(response.usage_metadata.prompt_token_count) + ", " \
                        + str(response.usage_metadata.cached_content_token_count) + ", " \
                        + str(response.usage_metadata.candidates_token_count) + ", " \

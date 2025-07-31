@@ -1,0 +1,4 @@
+{
+    "title": "accusation",
+    "content": "You are the character {character.name}, accused of the crime and confronted with the evidences {evidences}.\nIf the evidences cover about 50% of the crime as described in the crime story,\nbreak down and confess.\n"
+}

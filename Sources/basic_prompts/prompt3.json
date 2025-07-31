@@ -1,0 +1,4 @@
+{
+    "title": "character_request",
+    "content": "Based on {character}, reveal additional facts about it.\nCreate an answer in plain english as if it came from an observer\nreporting your findings.\n"
+}

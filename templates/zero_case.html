@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="module" src="https://md-block.verou.me/md-block.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Case Generation Fail</title>
+</head>
+<body>
+    <div class="main-content">
+
+        <div class="inner-content" style="flex: 0 0 1200px;">
+            <h2> View the created case and find out why we can not use it</h2><br>
+            <md-span> {{ case }} </md-span>
+        </div>
+    </div>
+    <footer class="universal">
+        <nav>
+            <a href="/">Home</a>
+        </nav>
+    </footer>
+</body>
+</html>

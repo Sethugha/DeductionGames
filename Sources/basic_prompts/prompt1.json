@@ -1,0 +1,4 @@
+{
+    "title": "metamorphosis",
+    "content": "Based on the text {data_string}, create a deduction game by extracting a title, short description of the criminal case,\na list of the characters their roles and about 5-7 clues pointing to the crime.\nAnswer in json.\n"
+}

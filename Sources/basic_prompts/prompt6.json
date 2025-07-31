@@ -1,0 +1,4 @@
+{
+    "title": "indicators",
+    "content": "Based on {data_string}, reveal clues and indicators which are currently mentioned in the story\nbut not in {clue}.\n"
+}

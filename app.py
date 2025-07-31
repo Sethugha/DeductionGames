@@ -3,6 +3,7 @@ from data_models import db, Character, Case, Clue, Text, Solution, AIConfig, Con
 from os import path
 import storage
 import time
+import json
 from ai_request import AIRequest
 from storage import find_highest_object_id
 
@@ -23,8 +24,10 @@ def home():
 
     cases = storage.retrieve_entity_from_db(Case)
     stories = storage.retrieve_entity_from_db(Text)
-    ai_config = storage.retrieve_aiconfig_by_status()
-    return render_template('home.html', stories=stories, cases=cases, aiconfig=ai_config, message="")
+    with open('ai_config.json', 'r') as jf:
+        ai_config = json.load(jf)
+
+    return render_template('home.html', green=ai_config['zero'], stories=stories, cases=cases, aiconfig=ai_config, message="")
 
 
 @app.route('/select_case', methods=['GET','POST'])
@@ -40,8 +43,9 @@ def select_case():
             if case.status == 'closed':
                 cases = storage.retrieve_entity_from_db(Case)
                 stories = storage.retrieve_entity_from_db(Text)
-                ai_config = storage.retrieve_aiconfig_by_status()
-                return render_template('home.html', stories=stories, cases=cases,
+                with open('ai_config.json', 'r') as jf:
+                    ai_config = json.load(jf)
+                return render_template('home.html', green=ai_config['zero'], stories=stories, cases=cases,
                                        aiconfig=ai_config, message="This case is already solved.")
             cases = storage.retrieve_entity_from_db(Case)
             for case in cases:
@@ -91,17 +95,23 @@ def generate_case():
     """
     stories = storage.retrieve_entity_from_db(Text)
     cases = storage.retrieve_entity_from_db(Case)
+    with open('ai_config.json', 'r') as jf:
+        ai_config = json.load(jf)
     text_id = request.form.get('text_id')
     if not text_id:
         return render_template('home.html',
+                               green=ai_config['zero'],
                                stories=stories,
                                cases=cases,
+                               aiconfig=ai_config,
                                message="Please select a Story to convert.")
     text = storage.read_entity_by_id(Text, text_id)
     if not text:
         return render_template('home.html',
+                               green=ai_config['zero'],
                                stories=stories,
                                cases=cases,
+                               aiconfig=ai_config,
                                message="No matching story found in database.")
     # ----------------------------------------------------------------------------------------------
     # Check if text is already used
@@ -110,8 +120,10 @@ def generate_case():
     already_used = storage.retrieve_case_via_source_text(text_id)
     if already_used:
         return render_template('home.html',
+                               green=ai_config['zero'],
                                stories=stories,
                                cases=cases,
+                               aiconfig=ai_config,
                                message="This story has already been used!")
     # ----------------------------------------------------------------------------------------------
     # Create new case from text.
@@ -119,56 +131,53 @@ def generate_case():
     new_id = storage.find_highest_case_id()
     new_case = ai_client.metamorphosis(text.content, new_id)
     if isinstance(new_case, str):
-        cases = storage.retrieve_entity_from_db(Case)
-        stories = storage.retrieve_entity_from_db(Text)
-        ai_config = storage.retrieve_aiconfig_by_status()
-        return render_template('home.html', stories=stories, cases=cases, aiconfig=ai_config,
-                               message=new_case)
+        return render_template('zero_case.html', case=new_case)
     # Extract case title and introduction
-    case_title = new_case.get('title', 'Case'+str(new_id))
-    introduction = new_case.get('introduction', None)
-    solution = new_case.get('solution', None)
-    case = Case(title=case_title, introduction=introduction, status='open', source=text.id)
-    storage.add_object_to_db_session(case)
-    # ----------------------------------------------------------------------------------------------
-    # Extract Characters and write into db
-    # ----------------------------------------------------------------------------------------------
-    char_list = new_case.get('characters', None)
-    for char in char_list:
-        character = Character(case_id=new_id, name=char['name'], role = char['role'])
-        storage.add_object_to_db_session(character)
-    # ----------------------------------------------------------------------------------------------
-    # Extract clues and write into db
-    # ----------------------------------------------------------------------------------------------
-    clue_list = new_case.get('clues', None)
-    print("hint-list")
-    for hint in clue_list:
-        print(hint)
-        clue = Clue(case_id=new_id,
-                    clue_name=hint["clue_name"],
-                    clue_description=hint["clue_description"],
-                    clue_details=hint["clue_details"]
-                   )
-
-        storage.add_object_to_db_session(clue)
-    # ----------------------------------------------------------------------------------------------
-    # Extract solution and write into db, currently unused.
-    # ----------------------------------------------------------------------------------------------
-    new_solution = new_case.get('solution', None)
-    new_culprit = new_solution.get('culprit')
-    new_method = new_solution.get('method')
-    new_evidence = new_solution.get('evidence')
-    solution = Solution(case_id=new_id,
-                        culprit=new_solution['culprit'],
-                        method=new_solution['method'],
-                        evidence=new_solution['evidence']
+    try:
+        case_title = new_case.get('title', 'Case'+str(new_id))
+        introduction = new_case.get('introduction', None)
+        case = Case(title=case_title, introduction=introduction, status='open', source=text.id)
+        storage.add_object_to_db_session(case)
+        # ----------------------------------------------------------------------------------------------
+        # Extract Characters and write into db
+        # ----------------------------------------------------------------------------------------------
+        char_list = new_case.get('characters', None)
+        for char in char_list:
+            character = Character(case_id=new_id, name=char['name'], role = char['role'])
+            storage.add_object_to_db_session(character)
+        # ----------------------------------------------------------------------------------------------
+        # Extract clues and write into db
+        # ----------------------------------------------------------------------------------------------
+        clue_list = new_case.get('clues', None)
+        for hint in clue_list:
+            print(hint)
+            clue = Clue(case_id=new_id,
+                        clue_name=hint["clue_name"],
+                        clue_description=hint["clue_description"],
+                        clue_details=hint["clue_details"]
                        )
-    storage.add_object_to_db_session(solution)
-    return render_template('case_details.html',
-                           case=case,
-                           characters=char_list,
-                           clues=clue_list
-                          )
+
+            storage.add_object_to_db_session(clue)
+            # ----------------------------------------------------------------------------------------------
+            # Extract solution and write into db, currently unused.
+            # ----------------------------------------------------------------------------------------------
+            new_solution = new_case.get('solution', None)
+            new_culprit = new_solution.get('culprit')
+            new_method = new_solution.get('method')
+            new_evidence = new_solution.get('evidence')
+            solution = Solution(case_id=new_id,
+                                culprit=new_solution['culprit'],
+                                method=new_solution['method'],
+                                evidence=new_solution['evidence']
+                               )
+            storage.add_object_to_db_session(solution)
+            return render_template('case_details.html',
+                                   case=case,
+                                   characters=char_list,
+                                   clues=clue_list
+                                  )
+    except KeyError:
+        return render_template('zero_case.html', case=new_case)
 
 
 @app.route('/add_text', methods=['GET','POST'])
@@ -217,7 +226,8 @@ def view_character(character_id):
     text = storage.read_entity_by_id(Text, case.source)
     clues = storage.read_clues_of_single_case(character.case_id)
     ai_response = ai_client.ai_character_request(text.content, character)
-    return render_template('character_detail.html', character=character, details=ai_response, clues=clues)
+    details = storage.cleanup_response_text(ai_response)
+    return render_template('character_detail.html', character=character, details=details, clues=clues)
 
 
 @app.route('/ask_character', methods=['GET','POST'])
@@ -235,9 +245,10 @@ def ask_character():
     text = storage.read_entity_by_id(Text, case.source)
     solution = storage.read_entity_by_id(Solution, case.solution)
     if question:
-        interrogation = ai_client.ai_interrogation(text.content, character, question, solution)
+        ai_response = ai_client.ai_interrogation(text.content, character, question, solution)
     else:
-        interrogation = ai_client.ai_interrogation(text.content, character, clue , solution)
+        ai_response = ai_client.ai_interrogation(text.content, character, clue , solution)
+    interrogation = storage.cleanup_response_text(ai_response)
     return render_template('character_detail.html', character=character, interrogation=interrogation,
                            clues=clues)
 
@@ -280,12 +291,13 @@ def search_indicators():
     text = storage.read_entity_by_id(Text, case.source)
     search_str = request.form.get('indicators')
     if search_str:
-        indicators = ai_client.search_indicators(text.content, search_str, clue)
-        #print("New Indicators: ", indicators) # debug
+        ai_response = ai_client.search_indicators(text.content, search_str, clue)
+        indicators = storage.cleanup_response_text(ai_response)
         clue.clue_details += indicators
         db.session.commit()
-        return render_template('indicators.html', indicators=indicators, clue=clue)
-    return render_template('indicators.html', clue=clue)
+
+        return render_template('hint_detail.html', clue=clue, details=clue, indicators=indicators)
+    return render_template('hint_detail.html', clue=clue, details=clue, indicators=None)
 
 
 @app.route('/config_ai', methods=['POST'])
@@ -294,18 +306,21 @@ def config_ai():
     new_id = find_highest_object_id(AIConfig)
     cases = storage.retrieve_entity_from_db(Case)
     stories = storage.retrieve_entity_from_db(Text)
-    ai_config = storage.retrieve_aiconfig_by_status()
+    with open('ai_config.json', 'r') as jf:
+        ai_config = json.load(jf)
     changed = request.form.get('changed')
-    ai_model = request.form.get('model') or ai_config.ai_model
-    ai_role = request.form.get('role') or ai_config.ai_role
-    ai_temperature = request.form.get('temp') or ai_config.ai_temperature
-    ai_top_p = request.form.get('top_p') or ai_config.ai_top_p
-    ai_top_k = request.form.get('top_k') or ai_config.ai_top_k
-    ai_max_out = request.form.get('max_out') or ai_config.ai_max_out
-    zero = request.form.get('zero_checked')
+    ai_model = request.form.get('model') or ai_config['ai_model']
+    ai_role = request.form.get('role') or ai_config['ai_role']
+    ai_temperature = request.form.get('temp') or ai_config['ai_temperature']
+    ai_top_p = request.form.get('top_p') or ai_config['ai_top_p']
+    ai_top_k = request.form.get('top_k') or ai_config['ai_top_k']
+    ai_max_out = request.form.get('max_out') or ai_config['ai_max_out']
+    zero = request.form.get('zero') or ai_config['free_prompts']
 
     if changed:
+
         new_config = AIConfig(status=1,
+                              free_prompts=zero,
                               ai_model=ai_model,
                               ai_role=ai_role,
                               ai_temperature=ai_temperature,
@@ -315,11 +330,13 @@ def config_ai():
                              )
         storage.deactivate_status(AIConfig)
         storage.add_object_to_db_session(new_config)
-        storage.json_dump_config(new_id)
+        storage.json_dump_config(new_id, zero)
         # reinit ai_client
+        with open('ai_config.json', 'r') as jf:
+            ai_config = json.load(jf)
         ai_client = AIRequest()
         message = f"AI reconfigured to profile {new_id}"
-    return render_template('home.html', stories=stories, cases=cases, aiconfig=new_config,
+    return render_template('home.html', green=ai_config['zero'], stories=stories, cases=cases, aiconfig=ai_config,
                                message=message or "")
 
 
@@ -340,8 +357,9 @@ def del_case():
         message = storage.delete_object_from_db(case)
     cases = storage.retrieve_entity_from_db(Case)
     stories = storage.retrieve_entity_from_db(Text)
-    ai_config = storage.retrieve_aiconfig_by_status()
-    return render_template('home.html', stories=stories, cases=cases, aiconfig=ai_config, message=message)
+    with open('ai_config.json', 'r') as jf:
+        ai_config = json.load(jf)
+    return render_template('home.html', green=ai_config['zero'], stories=stories, cases=cases, aiconfig=ai_config, message=message)
 
 
 @app.route('/del_text', methods=['POST'])
@@ -353,8 +371,9 @@ def del_text():
         message= storage.delete_object_from_db(text)
     cases = storage.retrieve_entity_from_db(Case)
     stories = storage.retrieve_entity_from_db(Text)
-    ai_config = storage.retrieve_aiconfig_by_status()
-    return render_template('home.html', stories=stories, cases=cases, aiconfig=ai_config, message=message)
+    with open('ai_config.json', 'r') as jf:
+        ai_config = json.load(jf)
+    return render_template('home.html', green=ai_config['zero'], stories=stories, cases=cases, aiconfig=ai_config, message=message)
 
 
 @app.route('/analysis', methods=['POST'])
@@ -381,8 +400,66 @@ def analysis():
                                            str(record.avg_time)
                                           ]
                                 sf.write(f"{analist}\n")
+    return redirect(url_for('home'))
+
+
+@app.route('/toggle_prompts', methods=['GET'])
+def toggle_prompts():
+    """Enables / disables additional editable prompts"""
+    with open('ai_config.json', 'r') as jf:
+        ai_config = json.load(jf)
+    zero = ai_config['zero']
+    if zero:
+        ai_config['zero'] = 0
+    else:
+        ai_config['zero'] = 1
+    with open('ai_config.json', 'w') as jf:
+        json.dump(ai_config, jf, indent=4)
+    new_config = AIConfig(status=1,
+                          free_prompts=zero,
+                          ai_model=ai_config['ai_model'],
+                          ai_role=ai_config['ai_role'],
+                          ai_temperature=ai_config['ai_temperature'],
+                          ai_top_p=ai_config['ai_top_p'],
+                          ai_top_k=ai_config['ai_top_k'],
+                          ai_max_out=ai_config['ai_max_out']
+                          )
+    storage.deactivate_status(AIConfig)
+    storage.add_object_to_db_session(new_config)
 
     return redirect(url_for('home'))
+
+
+@app.route('/edit_prompts', methods=['GET','POST'])
+def edit_prompts():
+    """Select and edit the prompt files in Source/basic_prompts"""
+    if request.method == 'GET':
+        return render_template('edit_prompts.html')
+
+    jsonfile = request.form.get('json_file')
+    if jsonfile:
+        fullpath=f"Sources/basic_prompts/{jsonfile}"
+        with open(fullpath, "r") as jf:
+            pfile = json.load(jf)
+        print(pfile)
+        title = pfile['title']
+        prompt = pfile['content']
+        return render_template('edit_prompts.html', title=title, prompt=prompt, fullpath=fullpath)
+    return render_template('edit_prompts.html')
+
+
+@app.route('/save_prompt', methods=['POST'])
+def save_prompt():
+    """Save a prompt-content into proper json"""
+    title = request.form.get('ht')
+    content = request.form.get('prompt')
+    fullpath= request.form.get('fp')
+    with open(fullpath, 'r') as jf:
+        pfile = json.load(jf)
+    pfile['content'] = content
+    with open(fullpath, 'w') as jf:
+        json.dump(pfile, jf, indent=4)
+    return redirect(url_for('edit_prompts'))
 
 
 if __name__ == "__main__":
@@ -391,6 +468,6 @@ if __name__ == "__main__":
         db.init_app(app)
         #with app.app_context():
         #    db.create_all()
-        app.run(host="127.0.0.1", port=5002, debug=True)
+        app.run(host="127.0.0.1", port=5000, debug=True)
     else:
         print("No database accessible. Aborting.")
