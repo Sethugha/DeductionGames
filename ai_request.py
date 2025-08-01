@@ -51,7 +51,10 @@ class AIRequest():
 
     def metamorphosis(self, data_string, case_id):
         """Order the metamorphosis text --> game. Uses meta prompting"""
-        print("airequest.py - ZERO: ", ZERO)
+        with open('ai_config.json', 'r') as jf:
+            tconfig = json.load(jf)
+
+        ZERO = tconfig['zero']
         if not ZERO:
             prompt = f"""You are a script author ordered to create a script for a deduction game
                          out of the given crime story {data_string}.
@@ -122,7 +125,10 @@ class AIRequest():
         """
         Order information about a clue or suspect.
         """
-        print("airequest.py - ZERO: ", ZERO)
+        with open('ai_config.json', 'r') as jf:
+            tconfig = json.load(jf)
+
+        ZERO = tconfig['zero']
         if not ZERO:
             prompt = f"""
                     You are the investigator in the field. You have studied the known facts
@@ -175,7 +181,10 @@ class AIRequest():
         """
         Order information about a witness or suspect.
         """
-        print("airequest.py - ZERO: ", ZERO)
+        with open('ai_config.json', 'r') as jf:
+            tconfig = json.load(jf)
+
+        ZERO = tconfig['zero']
         if not ZERO:
             prompt = f"""
                     You are an actor playing an aquaintance of {character} 
@@ -224,7 +233,10 @@ class AIRequest():
         """
         Order information about a clue or suspect. Always zero.
         """
-        print("airequest.py - ZERO: ", ZERO)
+        with open('ai_config.json', 'r') as jf:
+            tconfig = json.load(jf)
+
+        ZERO = tconfig['zero']
         if not ZERO:
             prompt = f"""
                      You are an actor playing the character {character.name} 
@@ -271,7 +283,10 @@ class AIRequest():
         The culprit will give up.
         few-shot prompt
         """
-        print("airequest.py - ZERO: ", ZERO)
+        with open('ai_config.json', 'r') as jf:
+            tconfig = json.load(jf)
+
+        ZERO = tconfig['zero']
         if not ZERO:
             prompt = f"""
                     You are an actor playing the character {character.name} 
@@ -323,7 +338,10 @@ class AIRequest():
         Look for additional indicators at a crime scene.
         Few-shot prompt
         """
-        print("airequest.py - ZERO: ", ZERO)
+        with open('ai_config.json', 'r') as jf:
+            tconfig = json.load(jf)
+
+        ZERO = tconfig['zero']
         if not ZERO:
             prompt = f"""
                       You are the investigator, looking for indicators 

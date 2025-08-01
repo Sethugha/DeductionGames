@@ -427,3 +427,15 @@ def gather_ai_configs():
         return data
     except Exception as e:  # For Debugging and Testing catch all Exceptions
         return f"DB Access failed: Exception {e}."
+
+
+def cleanup_response_text(text):
+    """Indicators and character interrogations can lead to
+    enumerations which are looking bad in running text
+    thus this replacement of digits followed by a point,
+    e.g.: 1. get a heading '\n'
+    """
+    for num in "1234":
+        pattern=f" {num}. "
+        text = text.replace(pattern,"\n"+pattern)
+    return text

@@ -1,6 +1,6 @@
 {
     "config_id": 18,
-    "zero": 1,
+    "zero": 0,
     "ai_model": "gemini-2.0-flash",
     "ai_role": "model",
     "ai_temperature": 0.4,

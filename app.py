@@ -164,7 +164,7 @@ def generate_case():
         # ----------------------------------------------------------------------------------------------
         clue_list = new_case.get('clues', None)
         for hint in clue_list:
-            print(hint)
+
             clue = Clue(case_id=new_id,
                         clue_name=hint["clue_name"],
                         clue_description=hint["clue_description"],
@@ -172,20 +172,20 @@ def generate_case():
                        )
 
             storage.add_object_to_db_session(clue)
-            # ----------------------------------------------------------------------------------------------
-            # Extract solution and write into db, currently unused.
-            # ----------------------------------------------------------------------------------------------
-            new_solution = new_case.get('solution', None)
-            new_culprit = new_solution.get('culprit')
-            new_method = new_solution.get('method')
-            new_evidence = new_solution.get('evidence')
-            solution = Solution(case_id=new_id,
+        # ----------------------------------------------------------------------------------------------
+        # Extract solution and write into db, currently unused.
+        # ----------------------------------------------------------------------------------------------
+        new_solution = new_case.get('solution', None)
+        new_culprit = new_solution.get('culprit')
+        new_method = new_solution.get('method')
+        new_evidence = new_solution.get('evidence')
+        solution = Solution(case_id=new_id,
                                 culprit=new_solution['culprit'],
                                 method=new_solution['method'],
                                 evidence=new_solution['evidence']
                                )
-            storage.add_object_to_db_session(solution)
-            return render_template('case_details.html',
+        storage.add_object_to_db_session(solution)
+        return render_template('case_details.html',
                                    case=case,
                                    characters=char_list,
                                    clues=clue_list
